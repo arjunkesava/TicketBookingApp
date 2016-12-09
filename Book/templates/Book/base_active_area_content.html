@@ -1,0 +1,21 @@
+{% extends 'Book/base.html' %}
+{% load static %}
+{% block active_movie_content %}
+
+{% for item in today_movies_list %}
+{% if forloop.counter|divisibleby:4 %}
+<div class="row">
+    {% endif %}
+    <div class="col-sm-3 col-xs-6">
+        <a href="/{{ item.movieid }}">
+            <!--<img class="img-responsive" src="{% static 'Book/images/movie'%}{{forloop.counter}}.jpg" alt="">-->
+            <img class="img-responsive thumbnail" src="{{ item.movieposter.url }}" alt="">
+            <div align="center" style="text-decoration:none">{{ item.moviename }}</div>
+        </a>
+    </div>
+    {% if forloop.counter|divisibleby:4 %}
+</div>
+<br/>
+{% endif %}
+{% endfor %}
+{% endblock active_movie_content %}

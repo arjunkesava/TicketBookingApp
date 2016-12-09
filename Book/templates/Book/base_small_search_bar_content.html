@@ -1,0 +1,59 @@
+{% block small_search_bar_content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">Current Bookings</h3>
+    </div>
+    <hr>
+</div>
+
+<div class="row">
+    <div class="col-lg-3">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_moviename }}<span
+                    class="caret"></span></button>
+            <ul class="dropdown-menu" name="moviename">
+                <li value="any_movie"><a href="/book/movie/any-movie"> Any Movie</a></li>
+                {% for item in today_movies_list_names %}
+                <li value="{{ item.0 }}"><a href="/book/movie/{{ item.0 }}">{{ item.1 }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_theatername }}<span class="caret"></span></button>
+            <ul class="dropdown-menu" name="theatername">
+                <li value="any_theater"><a href="/book/theater/any-theater">Any Theater</a></li>
+                {% for item in today_theater_list_names %}
+                <li value="{{ item.theaterid }}"><a href="/book/theater/{{ item.theaterid }}">{{ item.theatername }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_showdate }}<span class="caret"></span></button>
+            <ul class="dropdown-menu" name="showdate">
+                <li value="any_date"><a href="/book/showdate/any-date">Any Date</a></li>
+                {% for i in weeklist %}
+                <li><a href="/book/showdate/{{ i|date:'Y-m-d' }}">{{ i|date:"l, j M" }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_showname }}<span
+                    class="caret"></span></button>
+            <ul class="dropdown-menu" name="showname">
+                <li value="any_show"><a href="any-show">Any Show</a></li>
+                <li value="morning_show"><a href="/book/showname/morning-show">Morning Show</a></li>
+                <li value="matinee_show"><a href="/book/showname/matinee-show">Matinee Show</a></li>
+                <li value="first_show"><a href="/book/showname/first-show">First Show</a></li>
+                <li value="second_show"><a href="/book/showname/second-show">Second Show</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<br/>
+{% endblock small_search_bar_content %}
