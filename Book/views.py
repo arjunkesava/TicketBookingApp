@@ -1,10 +1,11 @@
-from django.http import Http404
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from .models import UserDetails, MovieDetails, TheaterBase, SeatingTable, BookedRecords, TheaterShowTimings, MovieActiveDays
+from .models import UserDetails, MovieDetails, TheaterBase, SeatingTable, BookedRecords, TheaterShowTimings, MovieActiveDays, ActiveShowTimings
 import time
 import json
 from datetime import datetime, timedelta
 from django.core import serializers
+import re
 
 # The Notes link is https://shrib.com/9gzBoNbh8HIrnqC
 def index(request):
@@ -15,14 +16,13 @@ def index(request):
     active_dates_content = MovieActiveDays.objects.filter(showfromdate__lte=current_date, showenddate__gte=end_date).distinct()
 
     today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
-    today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct().values_list('movieid', 'moviename')
     today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
 
     ## Array to print current + 6 days
-    weeklist = []
+    today_dates_list = {}
     for x in range(0, 6):
-        weeklist.append(datetime.now() + timedelta(days=x))
-
+        showdate = datetime.now() + timedelta(days=x)
+        today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
     #request.session['session_movies_list'] = serializers.serialize("json",today_movies_list_names)
     #request.session['session_movies_list'] = 'dada'
@@ -39,8 +39,8 @@ def index(request):
 
     return render(request, 'Book/base_active_area_content.html', {'active_dates_content': active_dates_content,
                                                                   'today_movies_list': today_movies_list,
-                                                                  'today_movies_list_names': today_movies_list_names,
-                                                                  'weeklist': weeklist,
+                                                                  'today_movies_list_names': today_movies_list,     # the same id for both names
+                                                                  'weeklist': today_dates_list,
                                                                   'today_theater_list_names': today_theater_list_names,
                                                                   'selected_moviename': 'Select Movie Name',
                                                                   'selected_theatername': 'Select Theater Name',
@@ -48,167 +48,230 @@ def index(request):
                                                                   'selected_showname': 'Select Show Time',
                                                                   })
 
-def movie(request, url_movie_id):
-    try:
-        url_movie_id = int(url_movie_id)
-    except ValueError:
-        raise Http404()
 
-    request.session['selected_moviename_id'] = url_movie_id
-    if url_movie_id:
-        movie_details = MovieDetails.objects.filter(movieid=url_movie_id)
-        selected_moviename = MovieDetails.objects.get(movieid=url_movie_id).moviename
-        request.session['selected_moviename'] = selected_moviename
-    else:       # if url movieid is null
-        movie_details = MovieDetails.objects.all().values('moviename')
-        request.session['selected_moviename'] = 'Select Movie Name'
+def single_element(request, string1):               # retrieves only single element
+    url_list = string1.split('/')
+    url_list = url_list[0]
 
     current_date = request.session.get('current_date')
-    end_date = request.session.get('end_date')
+    today_dates_list = {}
 
-    today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).values_list('movieid', 'moviename').distinct()
-    if request.session.get('selected_moviename') != 'Select Movie Name':
-        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date, movieactivedays__moviedetails=url_movie_id).distinct()
-        weeklist = []
+    if bool(re.compile(r'([\w\_]+)$').match(url_list)):  # the url is a movie
+        match = 'movie'
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__moviedetails=url_list, movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list_names = MovieDetails.objects.all()
+
+        for item in today_movies_list_names:
+            item.movieid = "/book/"+item.movieid
+
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__moviedetails=url_list).distinct()
+        for item in today_theater_list_names:
+            item.theaterid = "/book/"+item.theaterid+"/"+url_list
+
         for x in range(0, 6):
             showdate = datetime.now() + timedelta(days=x)
-            if bool(MovieDetails.objects.filter(movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate, movieid=url_movie_id).values_list('movieid', 'moviename').distinct().exists()) :
-                weeklist.append(showdate)
-
-    return render(request, 'Book/base_active_area_content.html', {'today_movies_list': movie_details,
-                                                                  'today_movies_list_names': today_movies_list_names,
-                                                                  'today_theater_list_names': today_theater_list_names,
-                                                                  'selected_moviename': selected_moviename,
-                                                                  'weeklist': weeklist,
-                                                                  'selected_theatername': 'Select Theater Name',
-                                                                  'selected_showdate': 'Select Date',
-                                                                  'selected_showname': 'Select Show Time',
-                                                                  })
-
-def theater(request, theaterid):
-    try:
-        theaterid = int(theaterid)
-    except ValueError:
-        raise Http404()
-
-    current_date = request.session.get('current_date')
-    request.session['selected_theatername_id'] = theaterid
+            if bool(MovieDetails.objects.filter(movieactivedays__moviedetails=url_list, movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values_list('movieid', 'moviename').distinct().exists()):
+                today_dates_list["/book/"+url_list+"/"+showdate.strftime('%Y-%m-%d')] = showdate
 
 
+        temp = MovieDetails.objects.filter(movieid=url_list).values('moviename').distinct()
+        try:
+            request.session['selected_moviename'] = temp[0]['moviename']
+            request.session['selected_theatername'] = 'Select Theater Name'
+            request.session['selected_showdate'] = 'Select Show Date'
+            request.session['selected_showtime'] = 'Select Show Time'
+        except Exception:
+            request.session['selected_moviename'] = 'Select Movie Name'
 
+    elif bool(re.compile(r'([\w\+]+)$').match(url_list)):     # the url is a theater
+        match = 'theater'
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list_names = today_movies_list
 
+        for x in range(0, 6):
+            showdate = datetime.now() + timedelta(days=x)
+            if bool(MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values('movieid').distinct().exists()):
+                today_dates_list["/book/" + url_list + "/" + showdate.strftime('%Y-%m-%d')] = showdate
+        today_theater_list_names = TheaterBase.objects.all()
 
-    #if request.session.get('selected_theatername') == 'Select Theater Name':
-    #    request.session['selected_theatername'] = TheaterBase.objects.get(theaterid=theaterid).theatername
-    theater_filter_value = 'movieactivedays__theaterbase'
-    fromdate_filter_value = 'movieactivedays__showfromdate__lte'
-    enddate_filter_value = 'movieactivedays__showenddate__gte'
+        temp = TheaterBase.objects.filter(theaterid=url_list).values('theatername').distinct()
+        try:
+            request.session['selected_moviename'] = 'Select Movie Name'
+            request.session['selected_theatername'] = temp[0]['theatername']
+            request.session['selected_showdate'] = 'Select Show Date'
+            request.session['selected_showtime'] = 'Select Show Time'
+        except Exception:
+            request.session['selected_theatername'] = 'Select Theater Name'
 
-    today_movies_list = MovieDetails.objects.filter(
-        **{theater_filter_value: request.session.get('selected_theatername_id'), fromdate_filter_value: current_date,
-           enddate_filter_value: current_date}).distinct()
-    today_theater_list_names = TheaterBase.objects.all().values('theatername').distinct()
-    today_movies_list_names = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid, movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).values_list('movieid', 'moviename').distinct()
+    if bool(re.compile(r'(\d{4}-[01]\d-[0-3]\d)$').match(url_list)):     # the url is a showdate
+        match = 'date'
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
 
-    #active_dates_content = MovieActiveDays.objects.filter(showfromdate__lte=current_date, showenddate__gte=end_date, theaterbase=theaterid)
+        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        for item in today_movies_list_names:
+            item.movieid = "/book/" + item.movieid
 
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        for item in today_theater_list_names:
+            item.theaterid = "/book/" + item.theaterid + "/" + url_list
 
-    return render(request, 'Book/base_active_area_content.html', {'today_movies_list': today_movies_list,
-                                                                  'today_movies_list_names': today_movies_list_names,
-                                                                  'today_theater_list_names': today_theater_list_names,
-                                                                  'selected_moviename': 'Select a Movie',
-                                                                  'selected_theatername': request.session.get('selected_theatername'),
-                                                                  'selected_showdate': 'Select Date',
-                                                                  'selected_showname': 'Select Show Time',
-                                                                  })
+        today_dates_list = {}
+        for x in range(0, 6):
+            showdate = datetime.now() + timedelta(days=x)
+            today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
-def date(request, url_showdate):
-    date_i_got = url_showdate
+        request.session['selected_theatername'] = 'Select Theater Name'
+        request.session['selected_moviename'] = 'Select Movie Name'
+        request.session['selected_showdate'] = url_list
+        request.session['selected_showtime'] = 'Select Show Time'
 
-    request.session['selected_date'] = url_showdate
+    if bool(re.compile(r'(morning_show|afternoon_show|first_show|second_show)$').match(url_list)):  # the url is a showtime
+        match = 'showtime'
 
-    current_date = request.session.get('current_date')
-    if request.session.get('selected_moviename') == 'Select Movie Name':
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
 
-        if request.session.get('selected_theatername') == 'Select Theater Name':
+        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date,movieactivedays__showenddate__gte=current_date).distinct()
+        for item in today_movies_list_names:
+            item.movieid = "/book/" + item.movieid + "/" + url_list
 
-            if request.session.get('selected_showname') == 'Select Show Time':
+        today_dates_list = {}
+        for x in range(0, 6):
+            showdate = datetime.now() + timedelta(days=x)
+            today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
-                today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                                movieactivedays__showfromdate__lte=current_date,
-                                                                movieactivedays__showenddate__gte=current_date).distinct()
-            else:
-                today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                                movieactivedays__showfromdate__lte=current_date,
-                                                                movieactivedays__showenddate__gte=current_date).distinct()
-        else:
-            selected_date = request.session.get('selected_showdate')
-            today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                            movieactivedays__showfromdate__lte=selected_date,
-                                                            movieactivedays__showenddate__gte=selected_date).distinct()
+        request.session['selected_theatername'] = 'Select Theater Name'
+        request.session['selected_moviename'] = 'Select Movie Name'
+        request.session['selected_showdate'] = 'Select Show Date'
+        request.session['selected_showtime'] = url_list
+
+    if today_movies_list.count() == 1:
+        template_name = 'Book/base_one_movie_content.html'
     else:
-        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                        movieactivedays__showfromdate__lte=current_date,
-                                                        movieactivedays__showenddate__gte=current_date,
-                                                        movieactivedays__movieid=request.session.get(
-                                                            'selected_moviename_id')).distinct()
+        template_name = 'Book/base_active_area_content.html'
 
-    today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=date_i_got, movieactivedays__showenddate__gte=date_i_got).distinct()
-    today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=date_i_got, movieactivedays__showenddate__gte=date_i_got).values_list('movieid', 'moviename').distinct()
-    today_theater_list_names = TheaterBase.objects.all()
-
-    return render(request, 'Book/base_active_area_content.html', {'today_movies_list': today_movies_list,
-                                                                  #'session_check': request.session.get('session_movies_list'),
+    return render(request, template_name, {'today_movies_list': today_movies_list,
                                                                   'today_movies_list_names': today_movies_list_names,
-                                                                  'selected_moviename': 'Select a Movie',
+                                                                  'weeklist': today_dates_list,
                                                                   'today_theater_list_names': today_theater_list_names,
-                                                                  'selected_theatername': 'Select a Theater',
-                                                                  'selected_showdate': date_i_got,
+                                                                  'selected_moviename': request.session.get(
+                                                                      'selected_moviename'),
+                                                                  'selected_theatername': request.session.get(
+                                                                      'selected_theatername'),
+                                                                  'selected_showdate': request.session.get(
+                                                                      'selected_showdate'),
                                                                   'selected_showname': 'Select Show Time',
+                                                                  'url_list': url_list,
+                                                                  'match': match,
                                                                   })
 
+
+def double_element(request, string2):
+    #string2 = url_patterns_parameter(string2)
+    #html = "The element I retrived is Double %s " % (string2)
+    #return HttpResponse(html)
+    url_list = string2.split('/')
+    current_date = request.session.get('current_date')
+
+    match = ''
+    today_dates_list = today_movies_list = today_movies_list_names = today_theater_list_names = {}
+    if bool(re.compile(r'([\w\+]+/[\w\_]+)$').match(url_list[0]+'/'+url_list[1])):     # theater and movie url
+        match = 'theater/movie/'
+
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0], movieactivedays__moviedetails=url_list[1], movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+
+        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0], movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        for item in today_movies_list_names:
+            item.movieid = "/book/"+url_list[0]+"/"+item.movieid
+
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__moviedetails=url_list[1]).distinct()
+        for item in today_theater_list_names:
+            item.theaterid = "/book/"+item.theaterid+"/"+url_list[1]
+
+        for x in range(0, 6):
+            showdate = datetime.now() + timedelta(days=x)
+            if bool(MovieDetails.objects.filter(movieactivedays__moviedetails=url_list[1], movieactivedays__theaterbase=url_list[0], movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values_list('movieid', 'moviename').distinct().exists()):
+                today_dates_list["/book/"+url_list[0]+"/"+url_list[1]+"/"+showdate.strftime('%Y-%m-%d')] = showdate
+
+        temp = TheaterBase.objects.filter(theaterid=url_list[0]).values('theatername').distinct()
+        request.session['selected_theatername'] = temp[0]['theatername']
+        temp = MovieDetails.objects.filter(movieid=url_list[1]).values('moviename').distinct()
+        request.session['selected_moviename'] = temp[0]['moviename']
+
+    elif bool(re.compile(r'([\w\+]+/\d{4}-[01]\d-[0-3]\d)$').match(url_list[0]+'/'+url_list[1])):     # theater and date url
+        match = 'theater/date/'
+
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0],
+                                                        movieactivedays__showfromdate__lte=url_list[1],
+                                                        movieactivedays__showenddate__gte=url_list[1]).distinct()
+
+        today_movies_list_names = today_movies_list
+        for item in today_movies_list_names:
+            item.movieid = "/book/" + url_list[0] + "/" + item.movieid + "/" + url_list[1]
+
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=url_list[1],
+                                                              movieactivedays__showenddate__gte=url_list[1]).distinct()
+        for item in today_theater_list_names:
+            item.theaterid = "/book/" + item.theaterid + "/" + url_list[1]
+
+        for x in range(0, 6):
+            showdate = datetime.now() + timedelta(days=x)
+            if bool(MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0],
+                                                movieactivedays__showfromdate__lte=url_list[1],
+                                                movieactivedays__showenddate__gte=url_list[1]).values_list('movieid', 'moviename').distinct().exists()):
+                today_dates_list[
+                    "/book/" + url_list[0] + "/" + showdate.strftime('%Y-%m-%d')] = showdate
+
+        temp = TheaterBase.objects.filter(theaterid=url_list[0]).values('theatername').distinct()
+        request.session['selected_theatername'] = temp[0]['theatername']
+        request.session['selected_showdate'] = url_list[1]
+
+    if today_movies_list.count() == 1:
+        template_name = 'Book/base_one_movie_content.html'
+    else:
+        template_name = 'Book/base_active_area_content.html'
+
+    return render(request, template_name, {'today_movies_list': today_movies_list,
+                                                                  'today_movies_list_names': today_movies_list_names,
+                                                                  'weeklist': today_dates_list,
+                                                                  'today_theater_list_names': today_theater_list_names,
+                                                                  'selected_moviename': request.session.get(
+                                                                      'selected_moviename'),
+                                                                  'selected_theatername': request.session.get(
+                                                                      'selected_theatername'),
+                                                                  'selected_showdate': request.session.get(
+                                                                      'selected_showdate'),
+                                                                  'selected_showname': request.session.get(
+                                                                      'selected_showtime'),
+                                                                  'url_list': url_list,
+                                                                  'match': match,
+                                                                  })
+
+
+def triple_element(request, string3):
+    html = "The element I retrived is triple %s " % (string3)
+    return HttpResponse(html)
+def quad_element(request, string4):
+    html = "The element I retrived is quad %s " % (string4)
+    return HttpResponse(html)
 
 '''
-    if request.session.get('selected_moviename') == 'Select Movie Name':
+def url_patterns_parameter(string2):
+    url_list = string2.split('/')
 
-        if request.session.get('selected_showdate') == 'Select Date':
+    redirect = []
+    for x in range(0, 4):
+        redirect.insert(x, 0)
+    for item in url_list:
+        if item != '':
+            if bool(re.compile(r'(\d{4}-[01]\d-[0-3]\d)$').match(item)):     # the url is a date
+                redirect[2] = item
+            elif bool(re.compile(r'(\d{4}-[01]\d-[0-3]\d)$').match(item)):  # the url is a show name
+                redirect[3] = item
+            elif bool(re.compile(r'([\w\_]+)$').match(item)):     # the url is a movie
+                redirect[1] = item
+            elif bool(re.compile(r'([\w\+]+)$').match(item)):  # the url is a theater
+                redirect[0] = item
 
-            if request.session.get('selected_showname') == 'Select Show Time':
-
-                today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                                movieactivedays__showfromdate__lte=current_date,
-                                                                movieactivedays__showenddate__gte=current_date).distinct()
-            else:
-                today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                                movieactivedays__showfromdate__lte=current_date,
-                                                                movieactivedays__showenddate__gte=current_date).distinct()
-        else:
-            selected_date = request.session.get('selected_showdate')
-            today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                            movieactivedays__showfromdate__lte=selected_date,
-                                                            movieactivedays__showenddate__gte=selected_date).distinct()
-    else:
-
-        if request.session.get('selected_showdate') == 'Select Date':
-
-            if request.session.get('selected_showname') == 'Select Show Time':
-
-                today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                        movieactivedays__showfromdate__lte=current_date,
-                                                        movieactivedays__showenddate__gte=current_date,
-                                                        movieactivedays__movieid=request.session.get('selected_moviename_id')).distinct()
-            else:
-
-                today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                                movieactivedays__showfromdate__lte=current_date,
-                                                                movieactivedays__showenddate__gte=current_date,
-                                                                movieactivedays__movieid=request.session.get('selected_moviename_id')).distinct()
-        else:
-
-            selected_date = request.session.get('selected_showdate')
-            today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=theaterid,
-                                                            movieactivedays__showfromdate__lte=selected_date,
-                                                            movieactivedays__showenddate__gte=selected_date,
-                                                            movieactivedays__movieid=request.session.get(
-                                                                'selected_moviename_id')).distinct()
+    return redirect
 '''

@@ -1,0 +1,68 @@
+{% extends 'Book/base.html' %}
+{% load static %}
+{% block active_movie_content %}
+<!--From One Movie Arae-->
+<div class="row">
+    {% for item in today_movies_list %}
+    <div class="col-sm-3">
+        <div class="col-xs-12">
+        <a href="/{{ item.movieid }}">
+            <!--<img class="img-responsive" src="{% static 'Book/images/movie'%}{{forloop.counter}}.jpg" alt="">-->
+            <img class="img-responsive thumbnail" src="{{ item.movieposter.url }}" alt="">
+            <div align="center" style="text-decoration:none">{{ item.moviename }}</div>
+        </a>
+        <p>
+            <!- Movie Related information will be stored here -->
+Telugu ● Dec 09 2016 ● U/A ● 2h 45m
+Use the wheel to rate the movie
+4
+-
+An action film directed by Surender Reddy, starring Rakul Preet Singh and Ram Charan Teja in the lead roles.
+Cast:Rakul Preet SinghRam Charan Teja
+Crew:Surender Reddy (Director)PS Vinod (Director of Photography)Hiphop Tamizha Adhi (Music Director)
+Genre:Action, Drama
+            <!- End Movie Related information will be stored here -->
+        </p>
+</div>
+    </div>
+    <div class="col-sm-9">
+        <p>
+            <!-- Booking and all the Crazy stuff will be done here -->
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras malesuada ante ac finibus ultricies. Phasellus imperdiet justo nec mi accumsan vehicula eleifend sit amet nisi. Mauris vitae enim scelerisque, cursus diam in, consequat nibh. Aliquam convallis rhoncus lorem sed mollis. Maecenas ornare tincidunt odio, vel volutpat urna venenatis quis. Vestibulum elementum nibh a ligula condimentum malesuada. Donec vulputate risus eget nisi viverra cursus. Mauris vel quam quis lacus auctor laoreet in molestie nulla. Nam tincidunt, leo id hendrerit consequat, risus augue mattis ipsum, eget semper massa arcu at ligula. Curabitur dapibus lectus nec nisi commodo, sit amet viverra augue semper. Donec viverra suscipit eros et finibus. Donec eleifend diam eu tellus cursus, sed consequat neque vehicula.
+
+Vestibulum vel tincidunt nisl. Nulla elementum egestas fringilla. Curabitur pulvinar id est at convallis. Cras vitae nunc non ipsum rutrum eleifend. In elementum eros elit, nec pharetra augue ornare at. Morbi tempus nunc rhoncus arcu eleifend, ut dapibus leo fringilla. Aliquam sodales ex sed ornare gravida. Suspendisse potenti. Pellentesque ut ullamcorper sem. Ut tincidunt, purus in feugiat fermentum, leo purus ultricies elit, et tempor metus ipsum in ligula. Phasellus id tellus neque. Cras sagittis turpis risus, vestibulum laoreet turpis congue vel. Sed interdum tellus vel mi egestas lacinia.
+
+Nam sit amet tellus nibh. Nulla pellentesque quam mi, et iaculis mi accumsan ut. Curabitur congue mattis metus at consectetur. Curabitur fermentum ex id nisl iaculis, placerat placerat justo sagittis. Proin ac orci et diam finibus tempor a commodo urna. Sed vitae semper velit. Suspendisse vel mauris vel velit blandit consectetur ac in turpis. Duis quis nisi imperdiet, porttitor neque non, fermentum diam. Nullam euismod metus vehicula egestas bibendum. In eget quam purus. Suspendisse potenti. Vivamus rhoncus pretium ex et finibus. Aenean id eros arcu. Fusce tempor mollis diam eget convallis. Aenean quam arcu, consequat quis placerat et, cursus sed nunc. In turpis neque, elementum nec massa finibus, feugiat interdum tellus.
+
+Nulla vitae magna nunc. Ut lorem diam, eleifend et ultrices nec, posuere eu orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum placerat urna neque, vel fringilla nulla accumsan quis. Proin at libero ac dolor malesuada lacinia sit amet non nisl. Suspendisse tempus suscipit mattis. Nunc facilisis, lectus sit amet iaculis malesuada, ex quam varius velit, ac dignissim sapien nisl vitae libero. Vivamus ac dolor sit amet erat facilisis placerat. Suspendisse urna tortor, volutpat in arcu eu, malesuada laoreet magna. Maecenas viverra dignissim mattis.
+
+Aenean convallis pharetra sodales. In sit amet neque leo. Donec et tristique arcu, ac dignissim quam. Nulla congue lectus eros, a sagittis magna ultricies vel. Curabitur porttitor placerat varius. In vestibulum nulla quis consequat scelerisque. Maecenas maximus malesuada orci quis facilisis. Vivamus commodo leo quis rhoncus ultricies. Nullam mi tellus, egestas vitae tortor eget, faucibus sodales dolor.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras malesuada ante ac finibus ultricies. Phasellus imperdiet justo nec mi accumsan vehicula eleifend sit amet nisi. Mauris vitae enim scelerisque, cursus diam in, consequat nibh. Aliquam convallis rhoncus lorem sed mollis. Maecenas ornare tincidunt odio, vel volutpat urna venenatis quis. Vestibulum elementum nibh a ligula condimentum malesuada. Donec vulputate risus eget nisi viverra cursus. Mauris vel quam quis lacus auctor laoreet in molestie nulla. Nam tincidunt, leo id hendrerit consequat, risus augue mattis ipsum, eget semper massa arcu at ligula. Curabitur dapibus lectus nec nisi commodo, sit amet viverra augue semper. Donec viverra suscipit eros et finibus. Donec eleifend diam eu tellus cursus, sed consequat neque vehicula.
+
+Vestibulum vel tincidunt nisl. Nulla elementum egestas fringilla. Curabitur pulvinar id est at convallis. Cras vitae nunc non ipsum rutrum eleifend. In elementum eros elit, nec pharetra augue ornare at. Morbi tempus nunc rhoncus arcu eleifend, ut dapibus leo fringilla. Aliquam sodales ex sed ornare gravida. Suspendisse potenti. Pellentesque ut ullamcorper sem. Ut tincidunt, purus in feugiat fermentum, leo purus ultricies elit, et tempor metus ipsum in ligula. Phasellus id tellus neque. Cras sagittis turpis risus, vestibulum laoreet turpis congue vel. Sed interdum tellus vel mi egestas lacinia.
+
+Nam sit amet tellus nibh. Nulla pellentesque quam mi, et iaculis mi accumsan ut. Curabitur congue mattis metus at consectetur. Curabitur fermentum ex id nisl iaculis, placerat placerat justo sagittis. Proin ac orci et diam finibus tempor a commodo urna. Sed vitae semper velit. Suspendisse vel mauris vel velit blandit consectetur ac in turpis. Duis quis nisi imperdiet, porttitor neque non, fermentum diam. Nullam euismod metus vehicula egestas bibendum. In eget quam purus. Suspendisse potenti. Vivamus rhoncus pretium ex et finibus. Aenean id eros arcu. Fusce tempor mollis diam eget convallis. Aenean quam arcu, consequat quis placerat et, cursus sed nunc. In turpis neque, elementum nec massa finibus, feugiat interdum tellus.
+
+Nulla vitae magna nunc. Ut lorem diam, eleifend et ultrices nec, posuere eu orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum placerat urna neque, vel fringilla nulla accumsan quis. Proin at libero ac dolor malesuada lacinia sit amet non nisl. Suspendisse tempus suscipit mattis. Nunc facilisis, lectus sit amet iaculis malesuada, ex quam varius velit, ac dignissim sapien nisl vitae libero. Vivamus ac dolor sit amet erat facilisis placerat. Suspendisse urna tortor, volutpat in arcu eu, malesuada laoreet magna. Maecenas viverra dignissim mattis.
+
+Aenean convallis pharetra sodales. In sit amet neque leo. Donec et tristique arcu, ac dignissim quam. Nulla congue lectus eros, a sagittis magna ultricies vel. Curabitur porttitor placerat varius. In vestibulum nulla quis consequat scelerisque. Maecenas maximus malesuada orci quis facilisis. Vivamus commodo leo quis rhoncus ultricies. Nullam mi tellus, egestas vitae tortor eget, faucibus sodales dolor.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras malesuada ante ac finibus ultricies. Phasellus imperdiet justo nec mi accumsan vehicula eleifend sit amet nisi. Mauris vitae enim scelerisque, cursus diam in, consequat nibh. Aliquam convallis rhoncus lorem sed mollis. Maecenas ornare tincidunt odio, vel volutpat urna venenatis quis. Vestibulum elementum nibh a ligula condimentum malesuada. Donec vulputate risus eget nisi viverra cursus. Mauris vel quam quis lacus auctor laoreet in molestie nulla. Nam tincidunt, leo id hendrerit consequat, risus augue mattis ipsum, eget semper massa arcu at ligula. Curabitur dapibus lectus nec nisi commodo, sit amet viverra augue semper. Donec viverra suscipit eros et finibus. Donec eleifend diam eu tellus cursus, sed consequat neque vehicula.
+
+Vestibulum vel tincidunt nisl. Nulla elementum egestas fringilla. Curabitur pulvinar id est at convallis. Cras vitae nunc non ipsum rutrum eleifend. In elementum eros elit, nec pharetra augue ornare at. Morbi tempus nunc rhoncus arcu eleifend, ut dapibus leo fringilla. Aliquam sodales ex sed ornare gravida. Suspendisse potenti. Pellentesque ut ullamcorper sem. Ut tincidunt, purus in feugiat fermentum, leo purus ultricies elit, et tempor metus ipsum in ligula. Phasellus id tellus neque. Cras sagittis turpis risus, vestibulum laoreet turpis congue vel. Sed interdum tellus vel mi egestas lacinia.
+
+Nam sit amet tellus nibh. Nulla pellentesque quam mi, et iaculis mi accumsan ut. Curabitur congue mattis metus at consectetur. Curabitur fermentum ex id nisl iaculis, placerat placerat justo sagittis. Proin ac orci et diam finibus tempor a commodo urna. Sed vitae semper velit. Suspendisse vel mauris vel velit blandit consectetur ac in turpis. Duis quis nisi imperdiet, porttitor neque non, fermentum diam. Nullam euismod metus vehicula egestas bibendum. In eget quam purus. Suspendisse potenti. Vivamus rhoncus pretium ex et finibus. Aenean id eros arcu. Fusce tempor mollis diam eget convallis. Aenean quam arcu, consequat quis placerat et, cursus sed nunc. In turpis neque, elementum nec massa finibus, feugiat interdum tellus.
+
+Nulla vitae magna nunc. Ut lorem diam, eleifend et ultrices nec, posuere eu orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum placerat urna neque, vel fringilla nulla accumsan quis. Proin at libero ac dolor malesuada lacinia sit amet non nisl. Suspendisse tempus suscipit mattis. Nunc facilisis, lectus sit amet iaculis malesuada, ex quam varius velit, ac dignissim sapien nisl vitae libero. Vivamus ac dolor sit amet erat facilisis placerat. Suspendisse urna tortor, volutpat in arcu eu, malesuada laoreet magna. Maecenas viverra dignissim mattis.
+
+Aenean convallis pharetra sodales. In sit amet neque leo. Donec et tristique arcu, ac dignissim quam. Nulla congue lectus eros, a sagittis magna ultricies vel. Curabitur porttitor placerat varius. In vestibulum nulla quis consequat scelerisque. Maecenas maximus malesuada orci quis facilisis. Vivamus commodo leo quis rhoncus ultricies. Nullam mi tellus, egestas vitae tortor eget, faucibus sodales dolor.
+
+
+            <!-- End Booking and all the Crazy stuff will be done here -->
+        </p>
+    </div>
+    {% endfor %}
+</div>
+<br/>
+{% endblock active_movie_content %}

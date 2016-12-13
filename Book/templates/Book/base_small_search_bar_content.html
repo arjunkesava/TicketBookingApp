@@ -12,9 +12,9 @@
             <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_moviename }}<span
                     class="caret"></span></button>
             <ul class="dropdown-menu" name="moviename">
-                <li value="any_movie"><a href="/book/movie/any-movie"> Any Movie</a></li>
+                <li value="any_movie"><a href="/"> Any Movie</a></li>
                 {% for item in today_movies_list_names %}
-                <li value="{{ item.0 }}"><a href="/book/movie/{{ item.0 }}">{{ item.1 }}</a></li>
+                <li value="{{ item.movieid }}"><a href="{{ item.movieid }}/">{{ item.moviename }}</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -23,9 +23,9 @@
         <div class="dropdown">
             <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_theatername }}<span class="caret"></span></button>
             <ul class="dropdown-menu" name="theatername">
-                <li value="any_theater"><a href="/book/theater/any-theater">Any Theater</a></li>
+                <li value="any_theater"><a href="/">Any Theater</a></li>
                 {% for item in today_theater_list_names %}
-                <li value="{{ item.theaterid }}"><a href="/book/theater/{{ item.theaterid }}">{{ item.theatername }}</a></li>
+                <li value="{{ item.theaterid }}"><a href="{{ item.theaterid }}/">{{ item.theatername }}</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -35,8 +35,8 @@
             <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_showdate }}<span class="caret"></span></button>
             <ul class="dropdown-menu" name="showdate">
                 <li value="any_date"><a href="/book/showdate/any-date">Any Date</a></li>
-                {% for i in weeklist %}
-                <li><a href="/book/showdate/{{ i|date:'Y-m-d' }}">{{ i|date:"l, j M" }}</a></li>
+                {% for key, value in weeklist.items %}
+                <li><a href="{{ key }}/">{{ value|date:"l, j M" }}</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -46,11 +46,11 @@
             <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ selected_showname }}<span
                     class="caret"></span></button>
             <ul class="dropdown-menu" name="showname">
-                <li value="any_show"><a href="any-show">Any Show</a></li>
-                <li value="morning_show"><a href="/book/showname/morning-show">Morning Show</a></li>
-                <li value="matinee_show"><a href="/book/showname/matinee-show">Matinee Show</a></li>
-                <li value="first_show"><a href="/book/showname/first-show">First Show</a></li>
-                <li value="second_show"><a href="/book/showname/second-show">Second Show</a></li>
+                <li value="any_show"><a href="any_show">Any Show</a></li>
+                <li value="morning_show"><a href="morning_show/">Morning Show</a></li>
+                <li value="matinee_show"><a href="matinee_show/">Matinee Show</a></li>
+                <li value="first_show"><a href="first_show/">First Show</a></li>
+                <li value="second_show"><a href="second_show/">Second Show</a></li>
             </ul>
         </div>
     </div>

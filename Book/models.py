@@ -6,7 +6,7 @@ from django.utils.encoding import python_2_unicode_compatible
 class UserDetails(models.Model):
     mailaddress = models.CharField(max_length=200)
     password = models.CharField(max_length=100)
-    userid = models.CharField(primary_key=True, max_length=20)
+    userid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.userid
 
@@ -15,7 +15,7 @@ class MovieDetails(models.Model):
     moviename = models.CharField(max_length=200)
     movierating = models.IntegerField()
     movieposter = models.ImageField(upload_to="media/")  # need to insert image here
-    movieid = models.CharField(primary_key=True, max_length=20)
+    movieid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.movieid
 
@@ -24,7 +24,7 @@ class TheaterBase(models.Model):
     location = models.CharField(max_length=200)
     theatername = models.CharField(max_length=500)
     totalseats = models.IntegerField()
-    theaterid = models.CharField(primary_key=True, max_length=20)
+    theaterid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.theaterid
 
@@ -32,7 +32,7 @@ class TheaterBase(models.Model):
 class SeatingTable(models.Model):
     seatlayouttext = models.TextField(max_length=5000)
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
-    seatingid = models.CharField(primary_key=True, max_length=20)
+    seatingid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.seatingid
 
@@ -47,16 +47,15 @@ class BookedRecords(models.Model):
     moviedetails = models.ForeignKey(MovieDetails, on_delete=models.CASCADE)
     seatingtable = models.ForeignKey(SeatingTable, on_delete=models.CASCADE)
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
-    bookid = models.CharField(primary_key=True, max_length=20)
+    bookid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.bookid
 
 @python_2_unicode_compatible
 class TheaterShowTimings(models.Model):
-    theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
     showname = models.CharField(max_length=100)
     showtime = models.TimeField()  # stores only time
-    theatershowtimingsid = models.CharField(primary_key=True, max_length=20)
+    theatershowtimingsid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.theatershowtimingsid
 
@@ -66,6 +65,14 @@ class MovieActiveDays(models.Model):
     showenddate = models.DateField()  # stores ending only date
     moviedetails = models.ForeignKey(MovieDetails, on_delete=models.CASCADE)
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
-    activedayid = models.CharField(primary_key=True, max_length=20)
+    activedayid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.activedayid
+
+@python_2_unicode_compatible
+class ActiveShowTimings(models.Model):
+    TheaterShowTimings = models.ForeignKey(TheaterShowTimings, on_delete=models.CASCADE)
+    MovieActiveDays = models.ForeignKey(MovieActiveDays, on_delete=models.CASCADE)
+    activeshowid = models.CharField(primary_key=True, max_length=100)
+    def __str__(self):
+        return self.activeshowid
