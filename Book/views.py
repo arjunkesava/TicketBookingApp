@@ -24,6 +24,15 @@ def index(request):
         showdate = datetime.now() + timedelta(days=x)
         today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
+    #TODO: store the show names into {}
+    show_name_list = TheaterShowTimings.objects.all().distinct()
+    today_show_name_list = {}
+    for item in show_name_list:
+        temp = item.showname.split('_')
+        today_show_name_list[item.showname] = temp[0].title()+' '+temp[1].title()
+
+
+
     #request.session['session_movies_list'] = serializers.serialize("json",today_movies_list_names)
     #request.session['session_movies_list'] = 'dada'
     request.session['selected_moviename'] = 'Select Movie Name'
@@ -42,6 +51,7 @@ def index(request):
                                                                   'today_movies_list_names': today_movies_list,     # the same id for both names
                                                                   'weeklist': today_dates_list,
                                                                   'today_theater_list_names': today_theater_list_names,
+                                                                  'today_show_name_list': today_show_name_list,
                                                                   'selected_moviename': 'Select Movie Name',
                                                                   'selected_theatername': 'Select Theater Name',
                                                                   'selected_showdate': 'Select Date',
@@ -54,7 +64,7 @@ def single_element(request, string1):               # retrieves only single elem
     url_list = url_list[0]
 
     current_date = request.session.get('current_date')
-    today_dates_list = {}
+    today_dates_list = today_show_name_list = {}
 
     if bool(re.compile(r'([\w\_]+)$').match(url_list)):  # the url is a movie
         match = 'movie'
@@ -73,6 +83,11 @@ def single_element(request, string1):               # retrieves only single elem
             if bool(MovieDetails.objects.filter(movieactivedays__moviedetails=url_list, movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values_list('movieid', 'moviename').distinct().exists()):
                 today_dates_list["/book/"+url_list+"/"+showdate.strftime('%Y-%m-%d')] = showdate
 
+        show_name_list = TheaterShowTimings.objects.all().distinct()
+        today_show_name_list = {}
+        for item in show_name_list:
+            temp = item.showname.split('_')
+            today_show_name_list[item.showname] = temp[0].title() + ' ' + temp[1].title()
 
         temp = MovieDetails.objects.filter(movieid=url_list).values('moviename').distinct()
         try:
@@ -93,6 +108,12 @@ def single_element(request, string1):               # retrieves only single elem
             if bool(MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values('movieid').distinct().exists()):
                 today_dates_list["/book/" + url_list + "/" + showdate.strftime('%Y-%m-%d')] = showdate
         today_theater_list_names = TheaterBase.objects.all()
+
+        show_name_list = TheaterShowTimings.objects.all().distinct()
+        today_show_name_list = {}
+        for item in show_name_list:
+            temp = item.showname.split('_')
+            today_show_name_list[item.showname] = temp[0].title() + ' ' + temp[1].title()
 
         temp = TheaterBase.objects.filter(theaterid=url_list).values('theatername').distinct()
         try:
@@ -120,6 +141,12 @@ def single_element(request, string1):               # retrieves only single elem
             showdate = datetime.now() + timedelta(days=x)
             today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
+        show_name_list = TheaterShowTimings.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        today_show_name_list = {}
+        for item in show_name_list:
+            temp = item.showname.split('_')
+            today_show_name_list[item.showname] = temp[0].title() + ' ' + temp[1].title()
+
         request.session['selected_theatername'] = 'Select Theater Name'
         request.session['selected_moviename'] = 'Select Movie Name'
         request.session['selected_showdate'] = url_list
@@ -140,6 +167,12 @@ def single_element(request, string1):               # retrieves only single elem
             showdate = datetime.now() + timedelta(days=x)
             today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
+        show_name_list = TheaterShowTimings.objects.all().distinct()
+        today_show_name_list = {}
+        for item in show_name_list:
+            temp = item.showname.split('_')
+            today_show_name_list[item.showname] = temp[0].title() + ' ' + temp[1].title()
+
         request.session['selected_theatername'] = 'Select Theater Name'
         request.session['selected_moviename'] = 'Select Movie Name'
         request.session['selected_showdate'] = 'Select Show Date'
@@ -154,13 +187,15 @@ def single_element(request, string1):               # retrieves only single elem
                                                                   'today_movies_list_names': today_movies_list_names,
                                                                   'weeklist': today_dates_list,
                                                                   'today_theater_list_names': today_theater_list_names,
+                                                                  'today_show_name_list': today_show_name_list,
                                                                   'selected_moviename': request.session.get(
                                                                       'selected_moviename'),
                                                                   'selected_theatername': request.session.get(
                                                                       'selected_theatername'),
                                                                   'selected_showdate': request.session.get(
                                                                       'selected_showdate'),
-                                                                  'selected_showname': 'Select Show Time',
+                                                                  'selected_showname': request.session.get(
+                                                                      'selected_showname'),
                                                                   'url_list': url_list,
                                                                   'match': match,
                                                                   })
@@ -222,8 +257,11 @@ def double_element(request, string2):
                 today_dates_list[
                     "/book/" + url_list[0] + "/" + showdate.strftime('%Y-%m-%d')] = showdate
 
-        temp = TheaterBase.objects.filter(theaterid=url_list[0]).values('theatername').distinct()
-        request.session['selected_theatername'] = temp[0]['theatername']
+        try:
+            temp = TheaterBase.objects.filter(theaterid=url_list[0]).values('theatername').distinct()
+            request.session['selected_theatername'] = temp['theatername']
+        except Exception:
+            request.session['selected_theatername'] = "Select Theater Name"
         request.session['selected_showdate'] = url_list[1]
 
     if today_movies_list.count() == 1:

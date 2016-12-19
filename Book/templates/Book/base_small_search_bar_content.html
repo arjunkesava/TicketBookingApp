@@ -47,10 +47,9 @@
                     class="caret"></span></button>
             <ul class="dropdown-menu" name="showname">
                 <li value="any_show"><a href="any_show">Any Show</a></li>
-                <li value="morning_show"><a href="morning_show/">Morning Show</a></li>
-                <li value="matinee_show"><a href="matinee_show/">Matinee Show</a></li>
-                <li value="first_show"><a href="first_show/">First Show</a></li>
-                <li value="second_show"><a href="second_show/">Second Show</a></li>
+                {% for key, value in today_show_name_list.items %}
+                    <li><a href="{{ key }}/">{{ value }}</a></li>
+                {% endfor %}
             </ul>
         </div>
     </div>
