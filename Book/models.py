@@ -56,13 +56,13 @@ class TheaterShowTimings(models.Model):
     showname = models.CharField(max_length=100)
     showtime = models.TimeField()  # stores only time
     theatershowtimingsid = models.CharField(primary_key=True, max_length=100)
+    MovieActiveDays = models.ManyToManyField('MovieActiveDays', through='ActiveShowTimings')
     def __str__(self):
         return self.theatershowtimingsid
 
 @python_2_unicode_compatible
 class MovieActiveDays(models.Model):
-    showfromdate = models.DateField()  # stores starting only date
-    showenddate = models.DateField()  # stores ending only date
+    date = models.DateField()  # stores single only date
     moviedetails = models.ForeignKey(MovieDetails, on_delete=models.CASCADE)
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
     activedayid = models.CharField(primary_key=True, max_length=100)

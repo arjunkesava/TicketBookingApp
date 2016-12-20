@@ -13,10 +13,10 @@ def index(request):
     current_date = time.strftime("%Y-%m-%d")
     end_date = datetime.now() + timedelta(days=7)
     end_date = end_date.strftime("%Y-%m-%d")
-    active_dates_content = MovieActiveDays.objects.filter(showfromdate__lte=current_date, showenddate__gte=end_date).distinct()
+    active_dates_content = MovieActiveDays.objects.filter(date=current_date).distinct()
 
-    today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
-    today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+    today_movies_list = MovieDetails.objects.filter(movieactivedays__date=current_date).distinct()
+    today_theater_list_names = TheaterBase.objects.filter(movieactivedays__date=current_date).distinct()
 
     ## Array to print current + 6 days
     today_dates_list = {}
@@ -68,7 +68,7 @@ def single_element(request, string1):               # retrieves only single elem
 
     if bool(re.compile(r'([\w\_]+)$').match(url_list)):  # the url is a movie
         match = 'movie'
-        today_movies_list = MovieDetails.objects.filter(movieactivedays__moviedetails=url_list, movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__moviedetails=url_list, movieactivedays__date=current_date).distinct()
         today_movies_list_names = MovieDetails.objects.all()
 
         for item in today_movies_list_names:
@@ -83,7 +83,7 @@ def single_element(request, string1):               # retrieves only single elem
             if bool(MovieDetails.objects.filter(movieactivedays__moviedetails=url_list, movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values_list('movieid', 'moviename').distinct().exists()):
                 today_dates_list["/book/"+url_list+"/"+showdate.strftime('%Y-%m-%d')] = showdate
 
-        show_name_list = TheaterShowTimings.objects.all().distinct()
+        show_name_list = TheaterShowTimings.objects.all().distinct().order_by('showtime')
         today_show_name_list = {}
         for item in show_name_list:
             temp = item.showname.split('_')
@@ -100,16 +100,16 @@ def single_element(request, string1):               # retrieves only single elem
 
     elif bool(re.compile(r'([\w\+]+)$').match(url_list)):     # the url is a theater
         match = 'theater'
-        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__date=current_date).distinct()
         today_movies_list_names = today_movies_list
 
         for x in range(0, 6):
             showdate = datetime.now() + timedelta(days=x)
-            if bool(MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values('movieid').distinct().exists()):
+            if bool(MovieDetails.objects.filter(movieactivedays__theaterbase=url_list, movieactivedays__date=showdate).values('movieid').distinct().exists()):
                 today_dates_list["/book/" + url_list + "/" + showdate.strftime('%Y-%m-%d')] = showdate
         today_theater_list_names = TheaterBase.objects.all()
 
-        show_name_list = TheaterShowTimings.objects.all().distinct()
+        show_name_list = TheaterShowTimings.objects.all().distinct().order_by('showtime')
         today_show_name_list = {}
         for item in show_name_list:
             temp = item.showname.split('_')
@@ -126,13 +126,13 @@ def single_element(request, string1):               # retrieves only single elem
 
     if bool(re.compile(r'(\d{4}-[01]\d-[0-3]\d)$').match(url_list)):     # the url is a showdate
         match = 'date'
-        today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__date=url_list).distinct()
 
-        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__date=url_list).distinct()
         for item in today_movies_list_names:
             item.movieid = "/book/" + item.movieid
 
-        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__date=url_list).distinct()
         for item in today_theater_list_names:
             item.theaterid = "/book/" + item.theaterid + "/" + url_list
 
@@ -141,7 +141,8 @@ def single_element(request, string1):               # retrieves only single elem
             showdate = datetime.now() + timedelta(days=x)
             today_dates_list["/book/" + showdate.strftime('%Y-%m-%d')] = showdate
 
-        show_name_list = TheaterShowTimings.objects.filter(movieactivedays__showfromdate__lte=url_list, movieactivedays__showenddate__gte=url_list).distinct()
+        #show_name_list = TheaterShowTimings.objects.raw('SELECT distinct * FROM Book_TheaterShowTimings where theatershowtimingsid IN (select TheaterShowTimings_id from Book_ActiveShowTimings where MovieActiveDays_id IN (select activedayid from Book_MovieActiveDays where date = %s)) order by showtime ASC', [url_list])
+        show_name_list = TheaterShowTimings.objects.filter(MovieActiveDays__date=url_list).distinct().order_by('showtime')
         today_show_name_list = {}
         for item in show_name_list:
             temp = item.showname.split('_')
@@ -155,10 +156,10 @@ def single_element(request, string1):               # retrieves only single elem
     if bool(re.compile(r'(morning_show|afternoon_show|first_show|second_show)$').match(url_list)):  # the url is a showtime
         match = 'showtime'
 
-        today_movies_list = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
-        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__date=current_date).distinct()
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__date=current_date).distinct()
 
-        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__showfromdate__lte=current_date,movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__date=current_date).distinct()
         for item in today_movies_list_names:
             item.movieid = "/book/" + item.movieid + "/" + url_list
 
@@ -213,9 +214,9 @@ def double_element(request, string2):
     if bool(re.compile(r'([\w\+]+/[\w\_]+)$').match(url_list[0]+'/'+url_list[1])):     # theater and movie url
         match = 'theater/movie/'
 
-        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0], movieactivedays__moviedetails=url_list[1], movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0], movieactivedays__moviedetails=url_list[1], movieactivedays__date=current_date).distinct()
 
-        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0], movieactivedays__showfromdate__lte=current_date, movieactivedays__showenddate__gte=current_date).distinct()
+        today_movies_list_names = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0], movieactivedays__date=current_date).distinct()
         for item in today_movies_list_names:
             item.movieid = "/book/"+url_list[0]+"/"+item.movieid
 
@@ -225,7 +226,7 @@ def double_element(request, string2):
 
         for x in range(0, 6):
             showdate = datetime.now() + timedelta(days=x)
-            if bool(MovieDetails.objects.filter(movieactivedays__moviedetails=url_list[1], movieactivedays__theaterbase=url_list[0], movieactivedays__showfromdate__lte=showdate, movieactivedays__showenddate__gte=showdate).values_list('movieid', 'moviename').distinct().exists()):
+            if bool(MovieDetails.objects.filter(movieactivedays__moviedetails=url_list[1], movieactivedays__theaterbase=url_list[0],movieactivedays__date=showdate).values_list('movieid', 'moviename').distinct().exists()):
                 today_dates_list["/book/"+url_list[0]+"/"+url_list[1]+"/"+showdate.strftime('%Y-%m-%d')] = showdate
 
         temp = TheaterBase.objects.filter(theaterid=url_list[0]).values('theatername').distinct()
@@ -237,23 +238,20 @@ def double_element(request, string2):
         match = 'theater/date/'
 
         today_movies_list = MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0],
-                                                        movieactivedays__showfromdate__lte=url_list[1],
-                                                        movieactivedays__showenddate__gte=url_list[1]).distinct()
+                                                        movieactivedays__date=url_list[1]).distinct()
 
         today_movies_list_names = today_movies_list
         for item in today_movies_list_names:
             item.movieid = "/book/" + url_list[0] + "/" + item.movieid + "/" + url_list[1]
 
-        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__showfromdate__lte=url_list[1],
-                                                              movieactivedays__showenddate__gte=url_list[1]).distinct()
+        today_theater_list_names = TheaterBase.objects.filter(movieactivedays__date=url_list[1]).distinct()
         for item in today_theater_list_names:
             item.theaterid = "/book/" + item.theaterid + "/" + url_list[1]
 
         for x in range(0, 6):
             showdate = datetime.now() + timedelta(days=x)
             if bool(MovieDetails.objects.filter(movieactivedays__theaterbase=url_list[0],
-                                                movieactivedays__showfromdate__lte=url_list[1],
-                                                movieactivedays__showenddate__gte=url_list[1]).values_list('movieid', 'moviename').distinct().exists()):
+                                                movieactivedays__date=url_list[1]).values_list('movieid', 'moviename').distinct().exists()):
                 today_dates_list[
                     "/book/" + url_list[0] + "/" + showdate.strftime('%Y-%m-%d')] = showdate
 
