@@ -16,6 +16,8 @@ class MovieDetails(models.Model):
     movierating = models.IntegerField()
     movieposter = models.ImageField(upload_to="media/")  # need to insert image here
     movieid = models.CharField(primary_key=True, max_length=100)
+    #linkmovieactivedays = models.ManyToManyField('ActiveShowTimings', through='MovieActiveDays')
+    #linkmovieshowtimings = models.ManyToManyField('MovieActiveDays', through='ActiveShowTimings')
     def __str__(self):
         return self.movieid
 
@@ -56,7 +58,7 @@ class TheaterShowTimings(models.Model):
     showname = models.CharField(max_length=100)
     showtime = models.TimeField()  # stores only time
     theatershowtimingsid = models.CharField(primary_key=True, max_length=100)
-    MovieActiveDays = models.ManyToManyField('MovieActiveDays', through='ActiveShowTimings')
+    linkmovieactivedays = models.ManyToManyField('MovieActiveDays', through='ActiveShowTimings')
     def __str__(self):
         return self.theatershowtimingsid
 
@@ -66,6 +68,7 @@ class MovieActiveDays(models.Model):
     moviedetails = models.ForeignKey(MovieDetails, on_delete=models.CASCADE)
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
     activedayid = models.CharField(primary_key=True, max_length=100)
+    linkshowtimings = models.ManyToManyField('TheaterShowTimings', through='ActiveShowTimings')
     def __str__(self):
         return self.activedayid
 

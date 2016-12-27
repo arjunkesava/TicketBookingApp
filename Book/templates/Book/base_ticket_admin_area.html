@@ -1,0 +1,91 @@
+{% extends 'Book/base.html' %}
+{% load static %}
+{% block active_movie_content %}
+Form Status = <b>{{ formstatus }}</b>
+Morning Show Values = <b>{{ morning_show_values }}</b>
+<div class="col-xs-12">
+<form action="#" method="post">{% csrf_token %}
+    <div class="row">
+        <div class="col-lg-4">
+            <label>Movie Details</label>
+            {{ forms.moviedetails }}
+        </div>
+        <div class="col-lg-4">
+            <label>Theater Base</label>
+            {{ forms.theaterbase }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <label>From Date</label>
+            {{ forms.from_date_field }}
+        </div>
+        <div class="col-lg-4">
+            <label>End Date</label>
+            {{ forms.end_date_field }}
+        </div>
+    </div>
+    {% if active_show_timings_list %}
+    <div class="row">
+        <div class="col-lg-3">
+            <input type="text" disabled="disabled" value="Morning Show" class="form-control">
+        </div>
+        <div class="col-lg-3">
+            <select class="form-control" name="morning_showtime" multiple>
+                <option></option>
+                {% for item in active_show_timings_list %}
+                    <option>{{item.showtime}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <input type="text" disabled="disabled" value="Matinee Show" class="form-control">
+        </div>
+        <div class="col-lg-3">
+            <select class="form-control" name="matinee_showtime" multiple>
+                <option></option>
+                {% for item in active_show_timings_list %}
+                    <option>{{item.showtime}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <input type="text" disabled="disabled" value="First Show" class="form-control">
+        </div>
+        <div class="col-lg-3">
+            <select class="form-control" name="first_showtime" multiple>
+                <option></option>
+                {% for item in active_show_timings_list %}
+                    <option>{{item.showtime}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <input type="text" disabled="disabled" value="Second Show" class="form-control">
+        </div>
+        <div class="col-lg-3">
+            <select class="form-control" name="second_showtime" multiple>
+                <option></option>
+                {% for item in active_show_timings_list %}
+                    <option>{{item.showtime}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col-lg-4">
+            <input type="submit" class="button">
+            </div>
+    </div>
+</form>
+</div>
+{% endblock active_movie_content %}

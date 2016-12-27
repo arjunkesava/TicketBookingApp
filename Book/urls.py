@@ -26,7 +26,12 @@ urlpatterns = [
     url(r'^(?P<string2>\d{4}-[01]\d-[0-3]\d/(morning_show|afternoon_show|first_show|second_show)/)$', views.double_element),
 
     url(r'^(?P<string3>[\w\+]+/[\w\_]+/\d{4}-[01]\d-[0-3]\d/)$', views.triple_element),
+    url(r'^(?P<string3>[\w\+]+/[\w\_]+/(morning_show|afternoon_show|first_show|second_show)/)$', views.triple_element),
+    url(r'^(?P<string3>[\w\+]+/\d{4}-[01]\d-[0-3]\d/(morning_show|afternoon_show|first_show|second_show)/)$', views.triple_element),
     url(r'^(?P<string4>[\w\+]+/[\w\_]+/\d{4}-[01]\d-[0-3]\d/(morning_show|afternoon_show|first_show|second_show))$', views.quad_element),
+
+    url(r'^ticketadmin/activedays$', views.ownadmin_movieactivedays, name="ownadmin_movieactivedays"),
+    url(r'^ticketadmin/activeshowtimings$', views.ownadmin_activeshowtimings, name="ownadmin_activeshowtimings"),
 
     '''
     url(r'^movie/(?P<url_movie_id>[0-9]+)/$', views.movie, name='movie'),
