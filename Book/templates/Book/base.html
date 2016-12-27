@@ -13,6 +13,16 @@
     <link href="{% static 'Book/css/portfolio-item.css' %}" rel="stylesheet" type="text/css">
 
     <title>{% block title %}Welcome to Movie Tickets{% endblock %}</title>
+    <style>
+    .borderless td,
+    .borderless tbody td,
+    .borderless tbody tr td,
+    .borderless th {
+    border: none;
+    }
+
+    </style>
+
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -77,7 +87,9 @@
     <!-- /.row -->
 </footer>
 {% endblock %}
-    <script src="{% static 'Book/js/jquery.min.js' %}"></script>
-    <script src="{% static 'Book/js/netbootstrap.min.js' %}" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="{% static 'Book/js/jquery.min.js' %}"></script>
+<script src="{% static 'Book/js/netbootstrap.min.js' %}"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
 </body>
 </html>
