@@ -11,11 +11,11 @@ class TheaterShowTimingsAdmin(admin.ModelAdmin):
     list_filter = ['showtime','showname']
 
 
-#admin.site.register(UserDetails)
+admin.site.register(UserDetails)
 #admin.site.register(MovieDetails)
 #admin.site.register(TheaterBase)
-#admin.site.register(SeatingTable)
-#admin.site.register(BookedRecords)
+admin.site.register(SeatingTable)
+admin.site.register(BookedRecords)
 admin.site.register(TheaterShowTimings, TheaterShowTimingsAdmin)
 admin.site.register(MovieActiveDays, MovieActiveDaysAdmin)
 admin.site.register(ActiveShowTimings)

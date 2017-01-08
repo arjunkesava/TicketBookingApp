@@ -33,6 +33,7 @@ class TheaterBase(models.Model):
 @python_2_unicode_compatible
 class SeatingTable(models.Model):
     seatlayouttext = models.TextField(max_length=5000)
+    seatclassname = models.TextField(max_length=100)
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
     seatingid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):

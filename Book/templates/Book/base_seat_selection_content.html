@@ -1,0 +1,902 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+
+    <link href="{% static 'Book/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'Book/css/portfolio-item.css' %}" rel="stylesheet" type="text/css">
+
+    <title>{% block title %}Welcome to Movie Tickets{% endblock %}</title>
+    <style>
+    .borderless td,
+    .borderless tbody td,
+    .borderless tbody tr td,
+    .borderless th {
+        border: none;
+    }
+
+
+    .box-inline-block{
+        display: inline-block;
+        width: 50px;
+        height: 30px;
+        text-align: center;
+        padding: 5px 14px;
+        border-radius: 15px;
+    }
+    .invalid_seat{
+        cursor: not-allowed;
+        background-color: #ccc;
+        color: white;
+        border: 1px solid #ddd;
+    }
+    .booked_seat{
+        cursor: not-allowed;
+        background-color: #f0ad4e;
+        color: white;
+        border: 1px solid #ddd;
+    }
+    .valid_seat{
+        background-color: #fff;
+        color: #27ae60;
+        border: 1px solid #27ae60;
+    }
+    .selected_seat{
+        background-color: #27ae60;
+        color: white;
+        border: 1px solid #ddd;
+    }
+
+    .final_confirm_disabled{
+        cursor: not-allowed;
+        color: #fff;
+        background-color: #ccc;
+        border-color: #ccc;
+    }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Book Tickets</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="#">About</a>
+                </li>
+                <li>
+                    <a href="#">Services</a>
+                </li>
+                <li>
+                    <a href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="dropdown">
+                <strong>Selected Movie:</strong><br/>
+                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_moviename }}
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="dropdown">
+                <strong>Selected Theater:</strong><br/>
+                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_theatername }}
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="dropdown">
+                <strong>Selected Date:</strong><br/>
+                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_showdate }}
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="dropdown">
+                <strong>Selected Show Name:</strong><br/>
+                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_showname }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row" align="center">
+        <div class="col-lg-3" align="left">
+            <div class="dropdown">
+                <strong>Selected Show Time:</strong><br/>
+                <a href="/book/" class="btn btn-warning" title="Selected Show Time">{{ selected_showtime }}</a>
+            </div>
+        </div>
+        <div class="col-lg-3" align="left">
+            <div class="dropdown">
+                <strong>Seats:</strong><br/>
+                <a class="btn btn-default" id="selected_seats"></a>
+            </div>
+        </div>
+        <div class="col-lg-3" align="left">
+            <div class="dropdown">
+                <strong>Amount:</strong><br/>
+                <a class="btn btn-default" id="amount">0</a>
+            </div>
+        </div>
+        <div class="col-lg-3" align="left">
+            <div class="dropdown">
+                <strong>Click:</strong><br/>
+                <a class="btn final_confirm_disabled" id="final_confirm">Confirm</a>
+            </div>
+        </div>
+
+        </div>
+</div>
+    <div class="row">   <!-- Main Seat Selection Area Bro-->
+        <br/>
+        <hr>
+        <div align="center"><label>Business Class Rs- 90</label></div>
+        <table class="borderless" align="center" id="business_class" value="90">
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A10</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A20</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A21</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A22</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A20</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A20</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="box-inline-block valid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block booked_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block booked_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block booked_seat">A10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block valid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A20</div>
+                </td>
+            </tr> <!-- valid seat -->
+            <tr>
+                <td>
+                    <div class="box-inline-block valid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block valid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">A20</div>
+                </td>
+            </tr> <!-- valid seat -->
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A20</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">A1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">A20</div>
+                </td>
+            </tr>
+        </table>
+        <br/>
+        <hr>
+        <div align="center"><label>Deluxe Class Rs- 50</label></div>
+        <table class="borderless" align="center" id="deluxe_class" value="50">
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">B1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B10</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B20</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B21</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B22</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="box-inline-block valid_seat">B1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block valid_seat">B11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block valid_seat">B20</div>
+                </td>
+            </tr> <!-- valid seat -->
+            <tr>
+                <td>
+                    <div class="box-inline-block invalid_seat">B1</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B2</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B3</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B4</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B5</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B6</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B7</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B8</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B9</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B10</div>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B11</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B12</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B13</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B14</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B15</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B16</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B17</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B18</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B19</div>
+                </td>
+                <td>
+                    <div class="box-inline-block invalid_seat">B20</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% block footer %}
+<hr>
+<footer>
+    <div class="row">
+        <div class="col-lg-12">
+            <p>Copyright &copy; Ticket Booking 2016</p>
+        </div>
+    </div>
+    <!-- /.row -->
+</footer>
+{% endblock %}
+<script src="{% static 'Book/js/jquery.min.js' %}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="{% static 'Book/js/netbootstrap.min.js' %}"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function(){
+        var seatcount = 0;
+        $(document).on( "click", ".valid_seat", function() {
+            if(seatcount==0)
+            {
+                $("#final_confirm").addClass("btn-danger");
+                $("#final_confirm").removeClass("final_confirm_disabled");
+            }
+            if(seatcount != 6)
+            {
+                seatcount++;
+
+                $(this).addClass("selected_seat");
+                $(this).removeClass("valid_seat");
+
+            //var seat_class = $(this).closest('table').attr('id');
+            var seat_class_amount = $(this).closest('table').attr('value');
+            //alert("Seat Class= " + seat_class + "seat am "+seat_class_amount);
+
+            var current_value = $("#amount").text();
+            if(current_value == "0"){
+                $("#amount").text(seat_class_amount);
+            }
+            else{
+                var int_amount = parseInt(current_value);
+                int_amount += parseInt(seat_class_amount);
+                $("#amount").text(int_amount);
+            }
+
+            // Updating Seat Count Box
+            var seatid = $(this).text();
+            $("#selected_seats").append(seatid+" ");
+
+            }
+            else
+            {
+            alert("Sorry. You are not allowed to book more than Six Seats!");
+            }
+
+        });
+
+        $(document).on( "click", ".selected_seat", function() {
+            seatcount--;
+
+            if(seatcount==0)
+            {
+                $("#final_confirm").removeClass("btn-danger");
+                $("#final_confirm").addClass("final_confirm_disabled");
+            }
+
+            $(this).addClass("valid_seat");
+            $(this).removeClass("selected_seat");
+
+            // Decreementing Amount
+            var seat_class_amount = $(this).closest('table').attr('value');
+            var current_value = $("#amount").text();
+            var int_amount = parseInt(current_value);
+            int_amount -= parseInt(seat_class_amount);
+            $("#amount").text(int_amount);
+
+             // Updating Seat Count Box
+            var current_seatid = $(this).text();
+            if(!current_seatid.indexOf(current_seatid))
+                $("#selected_seats").text( $("#selected_seats").text().replace(current_seatid, ''));
+
+        });
+    });
+</script>
+</body>
+</html>

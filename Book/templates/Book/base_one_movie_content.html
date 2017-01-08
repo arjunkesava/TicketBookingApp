@@ -14,38 +14,7 @@ Main {{ match }}
             </a>
             <p>
                 <!- Movie Related information will be stored here -->
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras malesuada ante ac finibus ultricies.
-                Phasellus imperdiet justo nec mi accumsan vehicula eleifend sit amet nisi. Mauris vitae enim
-                scelerisque, cursus diam in, consequat nibh. Aliquam convallis rhoncus lorem sed mollis. Maecenas ornare
-                tincidunt odio, vel volutpat urna venenatis quis. Vestibulum elementum nibh a ligula condimentum
-                malesuada. Donec vulputate risus eget nisi viverra cursus. Mauris vel quam quis lacus auctor laoreet in
-                molestie nulla. Nam tincidunt, leo id hendrerit consequat, risus augue mattis ipsum, eget semper massa
-                arcu at ligula. Curabitur dapibus lectus nec nisi commodo, sit amet viverra augue semper. Donec viverra
-                suscipit eros et finibus. Donec eleifend diam eu tellus cursus, sed consequat neque vehicula.
-
-                Vestibulum vel tincidunt nisl. Nulla elementum egestas fringilla. Curabitur pulvinar id est at
-                convallis. Cras vitae nunc non ipsum rutrum eleifend. In elementum eros elit, nec pharetra augue ornare
-                at. Morbi tempus nunc rhoncus arcu eleifend, ut dapibus leo fringilla. Aliquam sodales ex sed ornare
-                gravida. Suspendisse potenti. Pellentesque ut ullamcorper sem. Ut tincidunt, purus in feugiat fermentum,
-                leo purus ultricies elit, et tempor metus ipsum in ligula. Phasellus id tellus neque. Cras sagittis
-                turpis risus, vestibulum laoreet turpis congue vel. Sed interdum tellus vel mi egestas lacinia.
-
-                Nam sit amet tellus nibh. Nulla pellentesque quam mi, et iaculis mi accumsan ut. Curabitur congue mattis
-                metus at consectetur. Curabitur fermentum ex id nisl iaculis, placerat placerat justo sagittis. Proin ac
-                orci et diam finibus tempor a commodo urna. Sed vitae semper velit. Suspendisse vel mauris vel velit
-                blandit consectetur ac in turpis. Duis quis nisi imperdiet, porttitor neque non, fermentum diam. Nullam
-                euismod metus vehicula egestas bibendum. In eget quam purus. Suspendisse potenti. Vivamus rhoncus
-                pretium ex et finibus. Aenean id eros arcu. Fusce tempor mollis diam eget convallis. Aenean quam arcu,
-                consequat quis placerat et, cursus sed nunc. In turpis neque, elementum nec massa finibus, feugiat
-                interdum tellus.
-
-                Nulla vitae magna nunc. Ut lorem diam, eleifend et ultrices nec, posuere eu orci. Lorem ipsum dolor sit
-                amet, consectetur adipiscing elit. Vestibulum placerat urna neque, vel fringilla nulla accumsan quis.
-                Proin at libero ac dolor malesuada lacinia sit amet non nisl. Suspendisse tempus suscipit mattis. Nunc
-                facilisis, lectus sit amet iaculis malesuada, ex quam varius velit, ac dignissim sapien nisl vitae
-                libero. Vivamus ac dolor sit amet erat facilisis placerat. Suspendisse urna tortor, volutpat in arcu eu,
-                malesuada laoreet magna. Maecenas viverra dignissim mattis.
-
+                {% lorem 3 %}
                 <!- End Movie Related information will be stored here -->
             </p>
         </div>
@@ -55,81 +24,45 @@ Main {{ match }}
         <div class="row">
             <div class="col-lg-12">
                 <p>
-                    <a href="#" class="btn btn-sq-sm btn-success">
-                        <strong>28</strong><br/>
-                        <b>Monday</b>
-                    </a>
-                    <a href="#" class="btn btn-sq-sm btn-primary">
-                        27<br/>
-                        <b>Tuesday</b>
-                    </a>
-                    <a href="#" class="btn btn-sq-sm btn-primary">
-                        30<br/>
-                        <b>Wednesday</b>
-                    </a>
-                    <a href="#" class="btn btn-sq-sm btn-primary">
-                        27<br/>
-                        <b>Thursday</b>
-                    </a>
-                    <a href="#" class="btn btn-sq-sm btn-primary">
-                        01<br/>
-                        <b>Saturday</b>
-                    </a>
-                    <a href="#" class="btn btn-sq-sm btn-primary">
-                        30<br/>
-                        <b>Friday</b>
-                    </a>
+                    {% for key, value in weeklist.items %}
+<!--                    <script>alert("date is {{ today_date }}is {{ value  }}is {{ value }}")</script>-->
+                        {% if value|date:"Y-M-d" == today_date|date:"Y-M-d" %}
+                            <a href="{{ key }}/" class="btn btn-sq-sm btn-success">{{ value|date:"d" }}</strong><br/><b>{{value|date:"l" }}</b></a>
+                        {% else %}
+                            <a href="{{ key }}/" class="btn btn-sq-sm btn-primary">{{ value|date:"d" }}</strong><br/><b>{{value|date:"l" }}</b></a>
+                        {% endif %}
+                    {% endfor %}
                 </p>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <p><h4><strong>27- Monday June</strong></h4></p>
+                <p><h4>Selected Date is <strong>{{ today_date|date:"d, M-Y" }}</strong></h4></p>
             </div>
             <div class="col-lg-12">
-                <table class="table borderless">
-                    <tr>
-                        <td width="30%"><h4>Jagadamba Theater</h4></td>
-                        <td>
-                            <button class="btn btn-default">11:30</button>
-                            <button class="btn btn-primary">11:30</button>
-                            <button class="btn btn-warning">11:30</button>
-                            <button class="btn btn-danger">11:30</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="30%"><h4>Sharada Theater</h4></td>
-                        <td>
-                            <a href="/b" class="btn btn-info">11:30</a>
-                            <button class="btn btn-info">11:30</button>
-                            <button class="btn btn-info">11:30</button>
-                            <button class="btn btn-info">11:30</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="30%"><h4>Ramadevi Theater</h4></td>
-                        <td>
-                            <button class="btn btn-info">11:30</button>
-                            <button class="btn btn-info">11:30</button>
-                            <button class="btn btn-info">11:30</button>
-                            <button class="btn btn-info">11:30</button>
-                        </td>
-                    </tr>
-
-                </table>
+                <form>
+                    <table class="table borderless">
+                        {{ display_showtime_html|safe }}
+                    </table>
+                </form>
             </div>
         </div>
         <div class="row">
             <br/> <b>Today Session Movie </b>{{ today_movies_list_names}}
             <br/> <b>Today week list </b>{{ weeklist}}
             <br/> <b>Today theater list names </b>{{ today_theater_list_names}}
-            <br/> <b>Today show name </b>{{ today_show_name_listga }}
+            <br/> <b>Today show name </b>{{ today_show_name_list }}
             <br/> <b>Selected Movie </b>{{ selected_moviename }}
             <br/> <b>Selected Theater </b>{{ selected_theatername }}
             <br/> <b>Selected ShowDate </b>{{ selected_showdate }}
             <br/> <b>Selected ShowName </b>{{ selected_showname }}
+            <br/> <b>Today Date </b>{{ today_date }}
             <br/> <b>Url List </b>{{ url_list }}
             <br/> <b>all detals </b>{{ all_details_of_movie }}
+            <br/> <b>Sohw timing list</b>{{ today_show_timings_list }}
+            <br/> <b>display_showtime_html </b>{{ display_showtime_html }}
+            <br/> <b>Linked Date id </b>{{ today_date }}
+            <br/> <b>Linked movie id </b>{{ link_movieid }}
         </div>
 
         <!-- End Booking and all the Crazy stuff will be done here -->

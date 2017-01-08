@@ -17,6 +17,7 @@ urlpatterns = [
     # T/M   T/D     T/ti     M/D     M/Ti       D/Ti
     # T/M/D     T/M/Ti  T/D/Ti
     # T/M/D/Ti
+    # T/M/D/Ti/HexId
 
     url(r'^(?P<string1>[\w\_]+/|[\w\+]+/|\d{4}-[01]\d-[0-3]\d/|(morning_show|afternoon_show|first_show|second_show))$', views.single_element),
 
@@ -29,6 +30,7 @@ urlpatterns = [
     url(r'^(?P<string3>[\w\+]+/[\w\_]+/(morning_show|afternoon_show|first_show|second_show)/)$', views.triple_element),
     url(r'^(?P<string3>[\w\+]+/\d{4}-[01]\d-[0-3]\d/(morning_show|afternoon_show|first_show|second_show)/)$', views.triple_element),
     url(r'^(?P<string4>[\w\+]+/[\w\_]+/\d{4}-[01]\d-[0-3]\d/(morning_show|afternoon_show|first_show|second_show)/)$', views.quad_element),
+    url(r'^(?P<string5>[\w\+]+/[\w\_]+/\d{4}-[01]\d-[0-3]\d/(morning_show|afternoon_show|first_show|second_show)/(24:00:00|2[0-3]:[0-5][0-9]:00|[0-1][0-9]:[0-5][0-9]:00)/)$', views.seat_selection_element),
 
     url(r'^ticketadmin/activedays$', views.ownadmin_movieactivedays, name="ownadmin_movieactivedays"),
     url(r'^ticketadmin/activeshowtimings$', views.ownadmin_activeshowtimings, name="ownadmin_activeshowtimings"),
@@ -42,7 +44,6 @@ urlpatterns = [
 
     url(r'^showdate/any-date', views.index, name='index'),
     url(r'^showdate/(?P<url_showdate>[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])+)/$', views.date, name='date'),
-
     [\w\+]+/[\w\-]+/|[\w\+]+/\d{4}-[01]\d-[0-3]\d/|[\w\+]/(morning_show|afternoon_show|first_show|second_show)
     '''
     ]
