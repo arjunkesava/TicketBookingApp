@@ -19,6 +19,10 @@ urlpatterns = [
     # T/M/D/Ti
     # T/M/D/Ti/HexId
 
+    url(r'^orders/paybill$', views.orders, name="orders"),
+    url(r'^orders/book-ticket$', views.book_ticket, name="book_ticket"),
+    url(r'^orders/done/print/(?P<bookid>[123456ABCDEFGHIKKLMNOPQRSTUVXWYZ7890]{7})$', views.display_ticket, name="display_ticket"),
+
     url(r'^(?P<string1>[\w\_]+/|[\w\+]+/|\d{4}-[01]\d-[0-3]\d/|(morning_show|afternoon_show|first_show|second_show))$', views.single_element),
 
     url(r'^(?P<string2>[\w\+]+/[\w\_]+/|[\w\+]+/\d{4}-[01]\d-[0-3]\d/)$', views.double_element),
@@ -34,6 +38,8 @@ urlpatterns = [
 
     url(r'^ticketadmin/activedays$', views.ownadmin_movieactivedays, name="ownadmin_movieactivedays"),
     url(r'^ticketadmin/activeshowtimings$', views.ownadmin_activeshowtimings, name="ownadmin_activeshowtimings"),
+
+
 
     '''
     url(r'^movie/(?P<url_movie_id>[0-9]+)/$', views.movie, name='movie'),

@@ -2,7 +2,8 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from .models import UserDetails, MovieDetails, TheaterBase, SeatingTable, BookedRecords, TheaterShowTimings, MovieActiveDays, ActiveShowTimings
 import time
-import json
+import string
+import random
 import uuid
 from datetime import datetime, timedelta
 from django.core import serializers
@@ -10,6 +11,9 @@ import re
 import pdb
 
 from .forms import SeatingForm, MovieActiveDaysForm, ActiveShowTimingsForm
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 # The Notes link is https://shrib.com/9gzBoNbh8HIrnqC
 def index(request):
@@ -944,6 +948,41 @@ def seat_selection_element(request, string5):
     if bool(re.compile(r'([\w\+]+/[\w\_]+/\d{4}-[01]\d-[0-3]\d/(morning_show|matinee_show|first_show|second_show)/(24:00:00|[2][0-3]:[0-5][0-9]:00|[0-1][0-9]:[0-5][0-9]:00)/)').match(url_list[0] + '/' + url_list[1] + '/' + url_list[2] + '/' + url_list[3] + '/' + url_list[4] + '/')):
         match = "match"
 
+        seatingdatabase = SeatingTable.objects.filter(theaterbase=url_list[0])
+        seatinglayouthtml = '<div class="row" align="center">'
+        for item in seatingdatabase:
+            seatinglayouthtml += "<div align='center' style='width:100%; overflow: auto;'><label>" + item.seatclassname + " Rs: " + str(item.seatclassamount) + " </label>"
+            seatinglayouthtml += "<table class ='borderless' align='center' value='" + str(item.seatclassamount) + "' id='" + str(item.seatclassname) + "'>"
+            rows = item.seatlayouttext.split('|')
+            for row in rows:
+                cells = row.split(' ')
+                if cells[0] == 'N':
+                    seatcssclass = 'invalid_seat'
+                elif cells[0] == 'V':
+                    seatcssclass = 'valid_seat'
+                seatinglayouthtml += '<tr>'
+                for cell in cells:
+                    booked = 0
+                    if seatcssclass == 'valid_seat':
+                        try:
+                            seatlistset = BookedRecords.objects.filter(seatingtable=item.seatingid, theaterbase=url_list[0], moviedetails=url_list[1], showtime=str(url_list[2] + ' ' + url_list[4]))
+                            for seatlistitem in seatlistset:
+                                seatlistset = seatlistitem.seatslist.split(' ')
+                                for seatitem in seatlistset:
+                                    if seatitem == cell:
+                                        booked = 1
+                                        seatinglayouthtml += '<td><div class="box-inline-block booked_seat">' + cell + '</div></td>'
+                        except BookedRecords.DoesNotExist:
+                            seatlistset = ''
+                    if cell != '' and cell != 'N' and cell != 'V' and cell != '&':
+                        if booked == 0:
+                            seatinglayouthtml += '<td><div class="box-inline-block ' + seatcssclass + '">' + cell + '</div></td>'
+                    if cell == '&':
+                        seatinglayouthtml += '<td><div class="box-inline-block empty_seat"></div></td>'
+                seatinglayouthtml += '</tr>'
+            seatinglayouthtml += "</table><br/></div><hr>"
+        seatinglayouthtml+= '</div>'
+
         today_theaters_list = TheaterBase.objects.filter(theaterid=url_list[0])
         request.session['selected_theatername'] = today_theaters_list[0].theatername
 
@@ -960,10 +999,233 @@ def seat_selection_element(request, string5):
                                                 'selected_theatername': request.session.get('selected_theatername'),
                                                 'selected_showdate': request.session.get('selected_showdate'),
                                                 'selected_showname': request.session.get('selected_showname'),
+                                                'selected_theatername_id': url_list[0],
+                                                'selected_moviename_id': url_list[1],
+                                                'selected_showdate_id': url_list[2],
+                                                'selected_showname_id': url_list[3],
                                                 'selected_showtime': url_list[4],
                                                 'url_list': url_list,
                                                 'match': match,
-                                               })
+                                                'after_seat': 'false',
+                                                'form_action': '/book/orders/paybill',
+                                                'seatinglayout': seatinglayouthtml,
+                                                })
+
+def orders(request):
+    amount = seat_class_name = seats = showname = date = movieid = theaterid = showtime = ''
+    ticket_amount_bottom = booking_charges_bottom = booking_charges_side = service_tax_bottom = service_tax_side = swachh_bharat_bottom = swachh_bharat_side = krish_kalyan_bottom = krish_kalyan_side = total_amount = ''
+    seatcount = 0
+    if request.method == 'POST':
+        amount = request.POST['form_amount']
+        seats = request.POST['form_selected_seats']
+        seat_class_name = request.POST['form_selected_seat_class_name']
+        theaterid = request.POST['selected_theatername']
+        movieid = request.POST['selected_moviename']
+        date = request.POST['selected_showdate']
+        showname = request.POST['selected_showname']
+        showtime = request.POST['selected_showtime']
+
+        temp = seats.split(" ")
+        seatcount = 0
+        for item in temp:
+            seatcount+=1
+        seatcount-=1
+
+        # DRESS CIRCLE - 2 X Rs. 90.00
+        if amount == '':
+            amount=0
+        ticket_amount_bottom = seat_class_name + ' - ' + str(seatcount) + ' X Rs. ' + str('%.2f' % (float(int(amount)/int(seatcount))))
+
+        booking_charges_bottom = seat_class_name + ' - ' + str(seatcount) + ' X Rs. 15.00'
+        service_tax_bottom = seat_class_name + ' - ' + str(seatcount) + ' X Rs. ' + str('%.2f' % (((14 * (int(amount)/int(seatcount)))/100)/10))
+        swachh_bharat_bottom = seat_class_name + ' - ' + str(seatcount) + ' X Rs. ' + str('%.2f' % (((0.5 * (int(amount)/int(seatcount)))/100)/10))
+        krish_kalyan_bottom = seat_class_name + ' - ' + str(seatcount) + ' X Rs. ' + str('%.2f' % (((0.5 * (int(amount)/int(seatcount)))/100)/10))
+
+        booking_charges_side = str('%.2f' % (float(int(seatcount) * 15.00)))
+        service_tax_side = str('%.2f' % (float(((14 * (int(amount)/int(seatcount)))/100)/10) * seatcount))
+        swachh_bharat_side = str('%.2f' % (float(((0.5 * (int(amount)/int(seatcount)))/100)/10) * seatcount))
+        krish_kalyan_side = str('%.2f' % (float(((0.5 * (int(amount)/int(seatcount)))/100)/10) * seatcount))
+
+        total_amount = str('%.2f' % (int(amount)+float(booking_charges_side)+float(service_tax_side)+float(swachh_bharat_side)+float(krish_kalyan_side)))
+
+    return render(request, 'Book/base_seat_selection_content.html', {
+        'selected_moviename': request.session.get('selected_moviename'),
+        'selected_theatername': request.session.get('selected_theatername'),
+        'selected_showdate': request.session.get('selected_showdate'),
+        'selected_showname': request.session.get('selected_showname'),
+        'selected_showtime': showtime,
+        'selected_theatername_id': theaterid,
+        'selected_moviename_id': movieid,
+        'selected_showdate_id': date,
+        'selected_showname_id': showname,
+        'selected_seats': seats,
+        'selected_seat_class_name': seat_class_name,
+        'amount': amount,
+        'seatcount': seatcount,
+        'after_seat': 'true',
+        'form_action': '/book/orders/book-ticket',
+        'ticket_amount_bottom': ticket_amount_bottom,
+        'booking_charges_bottom': booking_charges_bottom,
+        'booking_charges_side': booking_charges_side,
+        'service_tax_bottom': service_tax_bottom,
+        'service_tax_side': service_tax_side,
+        'swachh_bharat_bottom': swachh_bharat_bottom,
+        'swachh_bharat_side': swachh_bharat_side,
+        'krish_kalyan_bottom': krish_kalyan_bottom,
+        'krish_kalyan_side': krish_kalyan_side,
+        'total_amount': total_amount,
+
+    })
+
+def book_ticket(request):
+    if request.method == 'POST':
+        cellnumber = request.POST['cellnumber']
+        mailaddress = request.POST['mailaddress']
+        username = request.POST['username']
+        amount = request.POST['form_amount']
+        seats = request.POST['form_selected_seats']
+        seat_class_name = request.POST['form_selected_seat_class_name']
+        theaterid = request.POST['selected_theatername']
+        movieid = request.POST['selected_moviename']
+        date = request.POST['selected_showdate']
+        showname = request.POST['selected_showname']
+        showtime = request.POST['selected_showtime']
+
+        temp = seats.split(" ")
+        seatcount = 0
+        for item in temp:
+            seatcount += 1
+        seatcount -= 1
+
+        userid = ''
+        if cellnumber != '' and mailaddress != '' and username != '':
+            if bool(UserDetails.objects.filter(cellnumber=cellnumber,mailaddress=mailaddress,username=username).exists()):
+                userdetails = UserDetails.objects.get(cellnumber=cellnumber, mailaddress=mailaddress, username=username)
+                userid = userdetails.userid
+            else:
+                userid = uuid.uuid4()
+                new_user = UserDetails()
+                new_user.username = str(username)
+                new_user.mailaddress = str(mailaddress)
+                new_user.cellnumber = str(cellnumber)
+                new_user.userid = userid
+                new_user.save()
+
+        bookid = id_generator(7, '123456ABCDEFGHIKKLMNOPQRSTUVXWYZ7890')
+        new_booking = BookedRecords()
+        new_booking.booktime = time.strftime("%Y-%m-%d %H:%M:00")
+        new_booking.showtime = datetime.strptime(str(date + " " + showtime), "%Y-%m-%d %H:%M:00")
+        new_booking.numberoftickets = int(seatcount)
+        new_booking.amount = float('%.2f' % (float(amount)))
+        new_booking.seatslist = seats
+        new_booking.userdetails = UserDetails.objects.get(userid=userid)
+        new_booking.moviedetails = MovieDetails.objects.get(movieid=movieid)
+        new_booking.seatingtable = SeatingTable.objects.get(theaterbase=theaterid, seatclassname__contains=seat_class_name)
+        new_booking.theaterbase = TheaterBase.objects.get(theaterid=theaterid)
+        new_booking.bookid = bookid
+        new_booking.save()
+
+        try:
+            BookedRecords.objects.get(bookid=bookid)
+            new_booking_status = True
+        except BookedRecords.DoesNotExist:
+            new_booking_status = False
+
+        if new_booking_status:
+            return HttpResponseRedirect('done/print/'+bookid)
+        else:
+            return HttpResponse("Something Went Wrong. Try Again")
+
+def display_ticket(request, bookid):
+
+    ticket_details = BookedRecords.objects.get(bookid=bookid)
+    user_details = UserDetails.objects.get(userid=ticket_details.userdetails)
+    movie_details = MovieDetails.objects.get(movieid=ticket_details.moviedetails)
+    theater_details = TheaterBase.objects.get(theaterid=ticket_details.theaterbase)
+    seating_details = SeatingTable.objects.get(seatingid=ticket_details.seatingtable)
+
+    temp = user_details.username.split(' ')
+
+    small_name = temp[0].title()
+    movie_name = movie_details.moviename.title()
+    theater_name = theater_details.theatername.title()
+    show_date_time = ticket_details.showtime.strftime("%d %b %Y, %H:%M %P")
+    location = theater_details.location
+    seat_class_number = seating_details.seatclassname + ': ' + ticket_details.seatslist
+    username = user_details.username.title()
+    cellnumber = user_details.cellnumber
+    mailaddress = user_details.mailaddress
+    ticketid = bookid
+
+    seatcount = int(ticket_details.numberoftickets)
+    amount = int(seating_details.seatclassamount) * seatcount
+
+    ticket_amount_bottom = seating_details.seatclassname + ' - ' + str(seatcount) + ' X Rs. ' + str(
+        '%.2f' % (float(int(amount) / int(seatcount))))
+
+    booking_charges_bottom = seating_details.seatclassname + ' - ' + str(seatcount) + ' X Rs. 15.00'
+    service_tax_bottom = seating_details.seatclassname + ' - ' + str(seatcount) + ' X Rs. ' + str(
+        '%.2f' % (((14 * (int(amount) / int(seatcount))) / 100) / 10))
+    swachh_bharat_bottom = seating_details.seatclassname + ' - ' + str(seatcount) + ' X Rs. ' + str(
+        '%.2f' % (((0.5 * (int(amount) / int(seatcount))) / 100) / 10))
+    krish_kalyan_bottom = seating_details.seatclassname + ' - ' + str(seatcount) + ' X Rs. ' + str(
+        '%.2f' % (((0.5 * (int(amount) / int(seatcount))) / 100) / 10))
+
+    booking_charges_side = str('%.2f' % (float(int(seatcount) * 15.00)))
+    service_tax_side = str('%.2f' % (float(((14 * (int(amount) / int(seatcount))) / 100) / 10) * seatcount))
+    swachh_bharat_side = str('%.2f' % (float(((0.5 * (int(amount) / int(seatcount))) / 100) / 10) * seatcount))
+    krish_kalyan_side = str('%.2f' % (float(((0.5 * (int(amount) / int(seatcount))) / 100) / 10) * seatcount))
+
+    total_amount = str('%.2f' % (
+    int(amount) + float(booking_charges_side) + float(service_tax_side) + float(swachh_bharat_side) + float(
+        krish_kalyan_side)))
+
+    '''
+    if request.method == 'POST':
+        cellnumber = request.POST['cellnumber']
+        mailaddress = request.POST['mailaddress']
+        username = request.POST['username']
+        amount = request.POST['form_amount']
+        seats = request.POST['form_selected_seats']
+        seat_class_name = request.POST['form_selected_seat_class_name']
+        theaterid = request.POST['selected_theatername']
+        movieid = request.POST['selected_moviename']
+        date = request.POST['selected_showdate']
+        showname = request.POST['selected_showname']
+        showtime = request.POST['selected_showtime']
+
+        temp = seats.split(" ")
+        seatcount = 0
+        for item in temp:
+            seatcount += 1
+        seatcount -= 1
+
+'''
+    return render(request, 'Book/base_seat_selection_content.html', {
+        'small_name': small_name,
+        'movie_name': movie_name,
+        'theater_name': theater_name,
+        'show_date_time': show_date_time,
+        'location': location,
+        'seat_class_number': seat_class_number,
+        'username': username,
+        'cellnumber': cellnumber,
+        'mailaddress': mailaddress,
+        'ticketid': ticketid,
+        'amount': amount,
+        'seatcount': seatcount,
+        'print_view': 'true',
+        'ticket_amount_bottom': ticket_amount_bottom,
+        'booking_charges_bottom': booking_charges_bottom,
+        'booking_charges_side': booking_charges_side,
+        'service_tax_bottom': service_tax_bottom,
+        'service_tax_side': service_tax_side,
+        'swachh_bharat_bottom': swachh_bharat_bottom,
+        'swachh_bharat_side': swachh_bharat_side,
+        'krish_kalyan_bottom': krish_kalyan_bottom,
+        'krish_kalyan_side': krish_kalyan_side,
+        'total_amount': total_amount,
+    })
 
 def ownadmin_movieactivedays(request):
     form = {}
@@ -1074,4 +1336,14 @@ Should it be some regular expression? The values generated of 32-character-long 
 reg exp for time is
 import re
 regexp = re.compile("(24:00|2[0-3]:[0-5][0-9]|[0-1][0-9]:[0-5][0-9])")
+
+import string
+>>> import random
+>>> def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+...    return ''.join(random.choice(chars) for _ in range(size))
+...
+>>> id_generator()
+'G5G74W'
+>>> id_generator(3, "6793YUIO")
+'Y3U'
 '''

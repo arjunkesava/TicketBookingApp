@@ -4,8 +4,9 @@ from django.utils.encoding import python_2_unicode_compatible
 
 @python_2_unicode_compatible
 class UserDetails(models.Model):
+    username = models.CharField(max_length=200)
     mailaddress = models.CharField(max_length=200)
-    password = models.CharField(max_length=100)
+    cellnumber = models.CharField(max_length=12)
     userid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
         return self.userid
@@ -33,7 +34,8 @@ class TheaterBase(models.Model):
 @python_2_unicode_compatible
 class SeatingTable(models.Model):
     seatlayouttext = models.TextField(max_length=5000)
-    seatclassname = models.TextField(max_length=100)
+    seatclassname = models.CharField(max_length=100)
+    seatclassamount = models.IntegerField()
     theaterbase = models.ForeignKey(TheaterBase, on_delete=models.CASCADE)
     seatingid = models.CharField(primary_key=True, max_length=100)
     def __str__(self):
@@ -44,7 +46,7 @@ class BookedRecords(models.Model):
     booktime = models.DateTimeField()
     showtime = models.DateTimeField()
     numberoftickets = models.IntegerField()
-    amount = models.IntegerField()
+    amount = models.FloatField()
     seatslist = models.TextField()
     userdetails = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
     moviedetails = models.ForeignKey(MovieDetails, on_delete=models.CASCADE)

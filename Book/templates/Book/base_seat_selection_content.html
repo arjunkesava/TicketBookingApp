@@ -12,7 +12,7 @@
     <link href="{% static 'Book/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'Book/css/portfolio-item.css' %}" rel="stylesheet" type="text/css">
 
-    <title>{% block title %}Welcome to Movie Tickets{% endblock %}</title>
+    <title>{% block title %}BookTickets{% endblock %}</title>
     <style>
     .borderless td,
     .borderless tbody td,
@@ -20,15 +20,34 @@
     .borderless th {
         border: none;
     }
+    .head-bg{
+        background: #ff002a;
+        padding-bottom: 5%;
+        margin: 40px 0 20px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+        color: white;
+    }
 
+    #header,#footer{
+        height:40px;
+        background:#2F7;
+        position:relative;
+        z-index:1;
+    }
 
     .box-inline-block{
         display: inline-block;
-        width: 50px;
-        height: 30px;
+        width: 45px;
+        height: 28px;
         text-align: center;
-        padding: 5px 14px;
+        padding: 5px 10px;
         border-radius: 15px;
+    }
+    .empty_seat{
+        background-color: #fff;
+        color: white;
+        border: 1px solid #fff;
     }
     .invalid_seat{
         cursor: not-allowed;
@@ -58,6 +77,16 @@
         color: #fff;
         background-color: #ccc;
         border-color: #ccc;
+    }
+
+    .big_font{
+        font-size: 18px;
+    }
+
+    .gray_bg{
+        color: #fff;
+        background-color: rgb(31, 37, 51);
+        border-color: #d6e9c6;
     }
     </style>
 </head>
@@ -93,726 +122,328 @@
     </div>
     <!-- /.container -->
 </nav>
-<div class="container">
-    <div class="row">
-        <div class="col-lg-3">
-            <div class="dropdown">
-                <strong>Selected Movie:</strong><br/>
-                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_moviename }}
-                </button>
+<form name="form" id="final_confirm_form" action="{{ form_action }}" method="POST">{% csrf_token %}
+    <div class="container">
+        {% if print_view = 'true' %}
+
+        <div class="alert alert-success">
+            <h1>Yipeee...!</h1><h3>Ticket Booked</h3>
+        </div>
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-lg-6">
+                    <p>Dear {{ small_name }},<br/>Your ticket(s) are Confirmed!</p>
+                </div>
+                <div class="col-lg-6" align="center">
+                    <p>Your Ticket Id is <span class="big_font"><strong>{{ ticketid }}</strong></span></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="alert gray_bg">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <p>Movie Name: <span class="big_font"><strong>{{ movie_name }}</strong></span></p>
+                                <p>Theater Name: <span
+                                        class="big_font"><strong>{{ theater_name }}</strong></span>
+                                </p>
+                                <p>Show Date and Time: <span
+                                        class="big_font"><strong>{{ show_date_time }}</strong></span>
+                                </p>
+                                <p>Location: <span class="big_font"><strong>{{ location }}</strong></span>
+                                </p>
+                                <p>Class and Seat Number: <span
+                                        class="big_font"><strong>{{ seat_class_number }}</strong></span></p>
+                                <p>Ticket Holder Name: <span class="big_font"><strong>{{ username }}</strong></span></p>
+                                <p>Holder Details: <span class="big_font"><strong>{{ cellnumber }}, {{ mailaddress }}</strong></span></p>
+                                <P>{{all_det}}</P>
+                            </div>
+                            <div class="col-lg-2" align="center">
+                                Scan the QR Code:<br/>
+                                <img src="http://cdnqrcgde.s3-eu-west-1.amazonaws.com/wp-content/uploads/2013/11/jpeg.jpg"
+                                     class="img-responsive">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">Ticket Summary</div>
+                        <div class="panel-body">
+                            <table class="table borderless">
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        <dt><strong>Ticket Amount</strong></dt>
+                                        <dd>{{ ticket_amount_bottom }}</dd>
+                                    </td>
+                                    <td align="right">
+                                        <dt>{{ amount }}.00</dt>
+                                        <dd>{{ amount }}.00</dd>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <dt><strong>Booking And Other Related Charges</strong></dt>
+                                        <dd>{{ booking_charges_bottom }}</dd>
+                                    </td>
+                                    <td align="right">
+                                        <dt>{{ booking_charges_side }}</dt>
+                                        <dd>{{ booking_charges_side }}</dd>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <dt><strong>Service Tax @ 14%</strong></dt>
+                                        <dd>{{ service_tax_bottom }}</dd>
+                                    </td>
+                                    <td align="right">
+                                        <dt>{{ service_tax_side }}</dt>
+                                        <dd>{{ service_tax_side }}</dd>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <dt><strong>Swachh Bharat Cess @ 0.5%</strong></dt>
+                                        <dd>{{ swachh_bharat_bottom }}</dd>
+                                    </td>
+                                    <td align="right">
+                                        <dt>{{ swachh_bharat_side }}</dt>
+                                        <dd>{{ swachh_bharat_side }}</dd>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <dt><strong>Krish Kalyan Cess @ 0.5%</strong></dt>
+                                        <dd>{{ krish_kalyan_bottom }}</dd>
+                                    </td>
+                                    <td align="right">
+                                        <dt>{{ krish_kalyan_side }}</dt>
+                                        <dd>{{ krish_kalyan_side }}</dd>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <dt><strong><h3>Total Amount</h3></strong></dt>
+                                    </td>
+                                    <td align="right">
+                                        <dt id="preview_total_amount"><h1>{{ total_amount }}</h1></dt>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Terms And Conditions</div>
+                        <div class="panel-body">
+                            <ul>
+                                <li>You agree that your use of this Website and the purchase or blocking of any movie
+                                    ticket, goods or services will be governed by these terms and conditions.
+                                    Movie tickets purchased or blocked via this Website are non-refundable and are not
+                                    available for exchange, unless required by law.
+                                </li>
+                                <li>Tickets once issued cannot be cancelled, exchanged or refunded.</li>
+                                <li>The ticket holder is required to carry the ID Proof provided at the time of booking for verification.</li>
+                                <li>Patrons below 18 years of age will not be admitted to 'A' rated movies.</li>
+                                <li>Children over 3 years of age require a ticket for entry into the screens.</li>
+                                <li>All other Justickets terms and conditions contained on the Website shall apply.</li>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-lg-3">
-            <div class="dropdown">
-                <strong>Selected Theater:</strong><br/>
-                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_theatername }}
-                </button>
+        {% else %}
+
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="dropdown">
+                    <strong>Selected Movie:</strong><br/>
+                    <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_moviename }}
+                        <input type="hidden" name="selected_moviename" id="selected_moviename" value="{{ selected_moviename_id }}">
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="dropdown">
+                    <strong>Selected Theater:</strong><br/>
+                    <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_theatername }}
+                        <input type="hidden" name="selected_theatername" id="selected_theatername" value="{{ selected_theatername_id }}">
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="dropdown">
+                    <strong>Selected Date:</strong><br/>
+                    <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_showdate }}
+                        <input type="hidden" name="selected_showdate" id="selected_showdate" value="{{ selected_showdate_id }}">
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="dropdown">
+                    <strong>Selected Show Name:</strong><br/>
+                    <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_showname }}
+                        <input type="hidden" name="selected_showname" id="selected_showname" value="{{ selected_showname_id }}">
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="col-lg-3">
-            <div class="dropdown">
-                <strong>Selected Date:</strong><br/>
-                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_showdate }}
-                </button>
+        <div class="row" align="center">
+            <div class="col-lg-3" align="left">
+                <div class="dropdown">
+                    <strong>Selected Show Time:</strong><br/>
+                    <a href="/book/" class="btn btn-warning" title="Selected Show Time">{{ selected_showtime }}</a>
+                        <input type="hidden" name="selected_showtime" id="selected_showtime" value="{{ selected_showtime }}">
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3">
-            <div class="dropdown">
-                <strong>Selected Show Name:</strong><br/>
-                <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown"> {{ selected_showname }}
-                </button>
+            <div class="col-lg-3" align="left">
+                <div class="dropdown">
+                    {% if after_seat = 'true' %}
+                        <strong>Selected Seats:</strong><br/>
+                        <a class="btn btn-default">{{ selected_seat_class_name }} - {{selected_seats }}</a>
+                    {% else %}
+                        <strong>Seats:</strong><br/>
+                        <span id="selected_seat_class_name" name="selected_seat_class_name" class ='btn btn-default'></span><a class="btn btn-default" id="selected_seats"></a>
+                    {% endif %}
+                    <input type="hidden" name="form_selected_seats" value="{{ selected_seats }}" id="form_selected_seats">
+                    <input type="hidden" name="form_selected_seat_class_name" value="{{ selected_seat_class_name }}" id="form_selected_seat_class_name">
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="row" align="center">
-        <div class="col-lg-3" align="left">
-            <div class="dropdown">
-                <strong>Selected Show Time:</strong><br/>
-                <a href="/book/" class="btn btn-warning" title="Selected Show Time">{{ selected_showtime }}</a>
+            <div class="col-lg-3" align="left">
+                <div class="dropdown">
+                    {% if after_seat = 'true' %}
+                        <strong>Amount to Pay:</strong><br/>
+                        <a class="btn btn-default">{{ amount }}</a>
+                    {% else %}
+                        <strong>Amount:</strong><br/>
+                        <a class="btn btn-default" id="amount">0</a>
+                    {% endif %}
+
+                    <input type="hidden" name="form_amount" value="0" id="form_amount">
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3" align="left">
-            <div class="dropdown">
-                <strong>Seats:</strong><br/>
-                <a class="btn btn-default" id="selected_seats"></a>
+            <div class="col-lg-3" align="left">
+                <div class="dropdown">
+                    {% if after_seat = 'true' %}
+                        <strong>Click to:</strong><br/>
+                        <input type="submit" class="btn btn-danger" id="final_pay" value="Book">
+                    {% else %}
+                        <strong>Click:</strong><br/>
+                        <input type="submit" class="btn final_confirm_disabled" id="final_confirm" value="Confirm">
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3" align="left">
-            <div class="dropdown">
-                <strong>Amount:</strong><br/>
-                <a class="btn btn-default" id="amount">0</a>
-            </div>
-        </div>
-        <div class="col-lg-3" align="left">
-            <div class="dropdown">
-                <strong>Click:</strong><br/>
-                <a class="btn final_confirm_disabled" id="final_confirm">Confirm</a>
-            </div>
-        </div>
 
         </div>
-</div>
-    <div class="row">   <!-- Main Seat Selection Area Bro-->
-        <br/>
-        <hr>
-        <div align="center"><label>Business Class Rs- 90</label></div>
-        <table class="borderless" align="center" id="business_class" value="90">
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A10</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A20</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A21</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A22</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A20</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A20</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="box-inline-block valid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block booked_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block booked_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block booked_seat">A10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block valid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A20</div>
-                </td>
-            </tr> <!-- valid seat -->
-            <tr>
-                <td>
-                    <div class="box-inline-block valid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block valid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">A20</div>
-                </td>
-            </tr> <!-- valid seat -->
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A20</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">A1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">A20</div>
-                </td>
-            </tr>
-        </table>
-        <br/>
-        <hr>
-        <div align="center"><label>Deluxe Class Rs- 50</label></div>
-        <table class="borderless" align="center" id="deluxe_class" value="50">
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">B1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B10</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B20</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B21</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B22</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="box-inline-block valid_seat">B1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block valid_seat">B11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block valid_seat">B20</div>
-                </td>
-            </tr> <!-- valid seat -->
-            <tr>
-                <td>
-                    <div class="box-inline-block invalid_seat">B1</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B2</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B3</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B4</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B5</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B6</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B7</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B8</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B9</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B10</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B11</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B12</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B13</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B14</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B15</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B16</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B17</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B18</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B19</div>
-                </td>
-                <td>
-                    <div class="box-inline-block invalid_seat">B20</div>
-                </td>
-            </tr>
-        </table>
+
+        {% if after_seat = 'false' %}
+            <!-- Main Seat Selection Area Bro-->
+            {{ seatinglayout|safe }}
+        {% else %}
+            <div class="row">
+            <br/><br/>
+            <div class="col-lg-4">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Fill Your Details</div>
+                    <div class="panel-body">
+                        <label for="username">Enter Your Name:</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">Full Name</span>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <br/>
+                        <label for="mailaddress">Enter Your Mail Address:</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">Mail</span>
+                            <input type="text" class="form-control" id="mailaddress" name="mailaddress" required>
+                        </div>
+                        <br/>
+                        <label for="cellnumber">Enter Your Mobile Number:</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">+91 </span>
+                            <input type="text" class="form-control" id="cellnumber" name="cellnumber" required>
+                        </div>
+                        <br/>
+                        <label for="savedetails">Click to Save:</label>
+                        <input type="submit" class="form-control btn-warning" id="savedetails" name="savedetails">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Payment Options</div>
+                    <div class="panel-body">
+                        <label for="offercode">Enter Offer Code:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="offercode" name="offercode" value="FREEMOVIE">
+                            <span class="input-group-addon">Check</span>
+                        </div>
+                        <small>Use 'FREEMOVIE' code for Free Tickets</small>
+                        <br/>
+                        <label for="netbanking">Pay With Net Banking</label>
+                        <input type="button" class="form-control btn-disabled" id="netbanking" name="netbanking" value="Net Banking">
+                        <br/>
+                        <label for="creditcard">Pay With Credit / Debit Card</label>
+                        <input type="button" class="form-control btn-disabled" id="creditcard" name="creditcard" value="Credit/Debit Card">
+                        <br/>
+                        <label for="paytm">Pay With Paytm</label>
+                        <input type="button" class="form-control btn-disabled" id="paytm" name="paytm" value="Paytm SignIn">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="panel panel-info">
+                    <div class="panel-heading">Ticket Summary</div>
+                    <div class="panel-body">
+                    <table class="table borderless">
+                        <tbody>
+                        <tr>
+                            <td><dt><strong>Ticket Amount</strong></dt><dd>{{ ticket_amount_bottom }}</dd></td>
+                            <td align="right"><dt>{{ amount }}.00</dt><dd>{{ amount }}.00</dd></td>
+                        </tr>
+                        <tr>
+                            <td><dt><strong>Booking And Other Related Charges</strong></dt><dd>{{ booking_charges_bottom }}</dd></td>
+                            <td align="right"><dt>{{ booking_charges_side }}</dt><dd>{{ booking_charges_side }}</dd></td>
+                        </tr>
+                        <tr>
+                            <td><dt><strong>Service Tax @ 14%</strong></dt><dd>{{ service_tax_bottom }}</dd></td>
+                            <td align="right"><dt>{{ service_tax_side }}</dt><dd>{{ service_tax_side }}</dd></td>
+                        </tr>
+                        <tr>
+                            <td><dt><strong>Swachh Bharat Cess @ 0.5%</strong></dt><dd>{{ swachh_bharat_bottom }}</dd></td>
+                            <td align="right"><dt>{{ swachh_bharat_side }}</dt><dd>{{ swachh_bharat_side }}</dd></td>
+                        </tr>
+                        <tr>
+                            <td><dt><strong>Krish Kalyan Cess @ 0.5%</strong></dt><dd>{{ krish_kalyan_bottom }}</dd></td>
+                            <td align="right"><dt>{{ krish_kalyan_side }}</dt><dd>{{ krish_kalyan_side }}</dd></td>
+                        </tr>
+                        <tr>
+                            <td><dt><strong>Total Amount</strong></dt></td>
+                            <td align="right"><dt id="total_amount">{{ total_amount }}</dt></td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
     </div>
-</div>
+</form>
+
 {% block footer %}
 <hr>
 <footer>
@@ -840,6 +471,7 @@
             }
             if(seatcount != 6)
             {
+
                 seatcount++;
 
                 $(this).addClass("selected_seat");
@@ -847,6 +479,8 @@
 
             //var seat_class = $(this).closest('table').attr('id');
             var seat_class_amount = $(this).closest('table').attr('value');
+            var seat_class_name = $(this).closest('table').attr('id');
+            $('#selected_seat_class_name').text(seat_class_name);
             //alert("Seat Class= " + seat_class + "seat am "+seat_class_amount);
 
             var current_value = $("#amount").text();
@@ -876,6 +510,7 @@
 
             if(seatcount==0)
             {
+                $('#seatclassname').text('');
                 $("#final_confirm").removeClass("btn-danger");
                 $("#final_confirm").addClass("final_confirm_disabled");
             }
@@ -896,7 +531,53 @@
                 $("#selected_seats").text( $("#selected_seats").text().replace(current_seatid, ''));
 
         });
+
+        $(document).on( "click", "#savedetails", function(e) {
+            document.form.form_amount.value = $('#total_amount').text();
+            return true;
+        });
+        $(document).on( "click", "#final_confirm", function(e) {
+                var current_class = $('#final_confirm').hasClass('final_confirm_disabled');
+                if(current_class) e.preventDefault();
+
+
+                document.form.form_amount.value = $('#amount').text();
+                document.form.form_selected_seats.value = $('#selected_seats').text();
+                document.form.form_selected_seat_class_name.value = $('#selected_seat_class_name').text();
+                return true;
+        });
+
+
     });
+
+/*
+$('#final_confirm_form').click(function(){
+            $.ajax({
+                type: 'POST',
+                url: '/orders/',
+                data:{
+                    amount = $('#amount').val(),
+                    selected_seats = $('#selected_seats').val()
+                },
+                success:function(){
+                alert("i am here");
+                }
+            });
+
+            $.ajax({
+                    type: 'POST',
+                    url: '/orders/',
+                    data:{
+                        items:items,
+                        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success:function(){
+                        alert("in success");
+                    }
+                });
+
+        });
+*/
 </script>
 </body>
 </html>
